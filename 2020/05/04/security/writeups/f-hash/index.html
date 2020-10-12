@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html  lang="en">
+<head>
+    <meta charset="utf-8" />
+
+<meta name="generator" content="Hexo 4.2.0" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+
+<title>[Writeups] VolgaCTF Quals 2020 - F-Hash - oalieno blog</title>
+
+
+    <meta name="description" content="這題給了一個 x86-64 ELF Executable，直接跑下去跑不出來，一直卡在那裡，逆向一下會發現 13B0 這個函式是一個遞迴函式，他的虛擬碼大概長下面這樣，會一直遞迴呼叫前兩層的答案，很明顯的有很多重複的子問題，這時候就是要用 Dynamic Programming 的思路來把算過的答案記下來就不會跑那麼久了，所以這題就是要優化這個函式，把程式跑完就會印出 flag。 12345def">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[Writeups] VolgaCTF Quals 2020 - F-Hash">
+<meta property="og:url" content="https://oalieno.github.io/2020/05/04/security/writeups/f-hash/index.html">
+<meta property="og:site_name" content="oalieno blog">
+<meta property="og:description" content="這題給了一個 x86-64 ELF Executable，直接跑下去跑不出來，一直卡在那裡，逆向一下會發現 13B0 這個函式是一個遞迴函式，他的虛擬碼大概長下面這樣，會一直遞迴呼叫前兩層的答案，很明顯的有很多重複的子問題，這時候就是要用 Dynamic Programming 的思路來把算過的答案記下來就不會跑那麼久了，所以這題就是要優化這個函式，把程式跑完就會印出 flag。 12345def">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://oalieno.github.io/images/ogimage.jpg">
+<meta property="article:published_time" content="2020-05-04T06:33:13.000Z">
+<meta property="article:modified_time" content="2020-08-29T12:04:21.940Z">
+<meta property="article:author" content="oalieno">
+<meta property="article:tag" content="security">
+<meta property="article:tag" content="reverse">
+<meta property="article:tag" content="ctf">
+<meta property="article:tag" content="writeups">
+<meta property="article:tag" content="frida">
+<meta property="article:tag" content="gdb">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://oalieno.github.io/images/ogimage.jpg">
+
+
+
+
+<link rel="canonical" href="https://oalieno.github.io/2020/05/04/security/writeups/f-hash/"/>
+
+
+
+
+<link rel="icon" href="/images/favicon.svg">
+
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.7.2/css/bulma.css">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.1/css/all.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu:400,600|Source+Code+Pro">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.12.0/styles/atom-one-light.css">
+
+
+    
+    
+<style>body>.footer,body>.navbar,body>.section{opacity:0}</style>
+
+    
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.6.8/dist/css/lightgallery.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.7.0/dist/css/justifiedGallery.min.css">
+
+    
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.css">
+
+    
+    
+    
+    
+<link rel="stylesheet" href="/css/bottom-to-top.css">
+
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-87869756-1"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-87869756-1');
+</script>
+
+    
+    
+    
+    <link rel="stylesheet" href="/css/progressbar.css">
+<script src="https://cdn.jsdelivr.net/npm/pace-js@1.0.2/pace.min.js"></script>
+    
+    <script async="" src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+
+
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="is-2-column">
+    <nav class="navbar navbar-main">
+    <div class="container">
+        <div class="navbar-brand is-flex-center">
+            <a class="navbar-item navbar-logo" href="/">
+            
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="25" height="25" style="margin-right: 10px"><g id="flat"><path d="M52,23a20,20,0,0,0-40,0V53a4,4,0,0,0,8,0V48a4,4,0,0,0,8,0v9a4,4,0,0    ,0,8,0V44a4,4,0,0,0,8,0V55a4,4,0,0,0,8,0Z" style="fill:#f98c96"/><rect x="19" y="44" width="2" height="2" style="fill:#e4544f"/><rect x="43" y="40" width="2" height="2" style    ="fill:#e4544f"/><path d="M32,37A12,12,0,0,0,44,25H20A12,12,0,0,0,32,37Z" style="fill:#fff"/><path d="M32,33a8,8,0,0,0,8-8H24A8,8,0,0,0,32,33Z" style="fill:#ffd782"/><path d=    "M32,29a4,4,0,0,0,4-4H28A4,4,0,0,0,32,29Z" style="fill:#e4544f"/><path d="M32,13h0A12,12,0,0,1,44,25v0a0,0,0,0,1,0,0H20a0,0,0,0,1,0,0v0A12,12,0,0,1,32,13Z" style="fill:#394d5    c"/><path d="M26,22H24c0-4.746,5.233-6,8-6l0,2C31.757,18,26,18.064,26,22Z" style="fill:#98a5a6"/><path d="M44.132,14.5C40.476,8.1,32.083,8,32,8V6c.392,0,9.629.085,13.868,7.5Z    " style="fill:#e4544f"/><circle cx="7" cy="10" r="3" style="fill:#f98c96"/><circle cx="57" cy="7" r="4" style="fill:#f98c96"/><circle cx="59" cy="37" r="3" style="fill:#f98c9    6"/><circle cx="5" cy="27" r="2" style="fill:#f98c96"/></g></svg>
+                oalieno blog
+            
+            </a>
+        </div>
+        <div class="navbar-menu">
+            
+            <div class="navbar-start">
+                
+                <a class="navbar-item"
+                href="/">首頁</a>
+                
+                <a class="navbar-item"
+                href="/archives/">歷史文章</a>
+                
+                <a class="navbar-item"
+                href="/categories/">分類</a>
+                
+                <a class="navbar-item"
+                href="/tags/">標籤</a>
+                
+                <a class="navbar-item"
+                href="/about/">關於我</a>
+                
+                <a class="navbar-item"
+                href="/old/">舊部落格</a>
+                
+            </div>
+            
+            <div class="navbar-end">
+                
+                
+                
+                <a class="navbar-item search" title="Search" href="javascript:;">
+                    <i class="fas fa-search"></i>
+                </a>
+                
+                <a class="navbar-item github-source" href="https://github.com/oalieno/oalieno.github.io">
+                    <div class="github-source-icon"><i class="fab fa-lg fa-github-alt"></i></div>
+                    <div class="github-source-repository">
+                        oalieno/oalieno.github.io
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+    
+    <section class="section">
+        <div class="container">
+            <div class="columns">
+                <div class="column is-9-tablet is-9-desktop is-9-widescreen has-order-2 column-main">
+<div class="card ">
+    
+    <div class="card-content article ">
+        
+        <div class="level article-meta is-size-7 is-uppercase is-mobile is-overflow-x-auto">
+            <div class="level-left">
+                <time class="level-item has-text-grey" datetime="2020-05-04T06:33:13.000Z">2020-05-04</time>
+                
+                <div class="level-item">
+                <a class="has-link-grey -link" href="/categories/security/">security</a>&nbsp;/&nbsp;<a class="has-link-grey -link" href="/categories/security/writeups/">writeups</a>
+                </div>
+                
+                
+                <span class="level-item has-text-grey">
+                    
+                    
+                    7 minutes read (About 1004 words)
+                </span>
+                
+                
+                <span class="level-item has-text-grey" id="busuanzi_container_page_pv">
+                    <i class="far fa-eye"></i>
+                    <span id="busuanzi_value_page_pv">0</span> visits
+                </span>
+                
+            </div>
+        </div>
+        
+        <h1 class="title is-size-3 is-size-4-mobile has-text-weight-normal">
+            
+                [Writeups] VolgaCTF Quals 2020 - F-Hash
+            
+        </h1>
+        <div class="content">
+            <p>這題給了一個 x86-64 ELF Executable，直接跑下去跑不出來，一直卡在那裡，逆向一下會發現 <code>13B0</code> 這個函式是一個遞迴函式，他的虛擬碼大概長下面這樣，會一直遞迴呼叫前兩層的答案，很明顯的有很多重複的子問題，這時候就是要用 Dynamic Programming 的思路來把算過的答案記下來就不會跑那麼久了，所以這題就是要優化這個函式，把程式跑完就會印出 flag。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">_13B0</span><span class="params">(depth, a, b)</span>:</span></span><br><span class="line">    ...</span><br><span class="line">    r1 = _13B0(depth - <span class="number">1</span>, a, b)</span><br><span class="line">    r2 = _13B0(depth - <span class="number">2</span>, a, b)</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+<p>以下提供三種解法，讀者可以跟著練習一下。</p>
+<h2 id="Rewrite-Function-with-Python"><a class="header-anchor" href="#Rewrite-Function-with-Python"></a>Rewrite Function with Python</h2>
+<p>最直覺的方法就是把 IDA decompile 出來的 code 搬到 python 上重寫一下，沒什麼技術，這是我在賽中用的方法，但就是要注意一下型態的問題，比如兩個 unsigned int 相乘可能 overflow 在 python 裡面要 <code>mod (1 &lt;&lt; 32)</code>，更多細節請看下面的程式碼。</p>
+<figure class="highlight python"><figcaption><span>solve-rewrite.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"></span><br><span class="line">table = [<span class="number">0</span>]</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">26</span>):</span><br><span class="line">    table += [i * <span class="number">10</span> + <span class="number">1</span> + (<span class="number">0xf6</span> &lt;&lt; <span class="number">120</span>)] * <span class="number">10</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">bitcountsum</span><span class="params">(a, b)</span>:</span></span><br><span class="line">    a %= (<span class="number">1</span> &lt;&lt; <span class="number">64</span>)</span><br><span class="line">    b %= (<span class="number">1</span> &lt;&lt; <span class="number">64</span>)</span><br><span class="line">    <span class="keyword">return</span> bin(a).count(<span class="string">'1'</span>) + bin(b).count(<span class="string">'1'</span>)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">calc</span><span class="params">(a, b, depth = <span class="number">256</span>)</span>:</span></span><br><span class="line">    ans = [<span class="number">0</span>]</span><br><span class="line">    ans.append((bitcountsum(a, b), <span class="number">0</span>, <span class="number">0</span>))</span><br><span class="line">    ans.append((bitcountsum(a ^ <span class="number">1</span>, b), <span class="number">0</span>, <span class="number">1</span>))</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">3</span>, depth + <span class="number">1</span>):</span><br><span class="line">        v15, v16 = ans[i - <span class="number">1</span>], ans[i - <span class="number">2</span>]</span><br><span class="line">        v13 = ((v15[<span class="number">0</span>] + v15[<span class="number">1</span>] * (<span class="number">1</span> &lt;&lt; <span class="number">64</span>)) + (v16[<span class="number">0</span>] + v16[<span class="number">1</span>] * (<span class="number">1</span> &lt;&lt; <span class="number">64</span>)) + bitcountsum((v15[<span class="number">2</span>] + v16[<span class="number">2</span>]) ^ a, b)) % (<span class="number">1</span> &lt;&lt; <span class="number">128</span>)</span><br><span class="line">        v14 = table[i]</span><br><span class="line">        <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">            <span class="keyword">if</span> (v14 &gt;&gt; <span class="number">64</span>) &gt; (v13 &gt;&gt; <span class="number">64</span>):</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">            <span class="keyword">if</span> (v14 &gt;&gt; <span class="number">64</span>) == (v13 &gt;&gt; <span class="number">64</span>):</span><br><span class="line">                <span class="keyword">if</span> v14 % (<span class="number">1</span> &lt;&lt; <span class="number">64</span>) &gt;= v13 % (<span class="number">1</span> &lt;&lt; <span class="number">64</span>):</span><br><span class="line">                    <span class="keyword">break</span></span><br><span class="line">            k = max(<span class="number">1</span>, (v13 &gt;&gt; <span class="number">64</span>) // (v14 &gt;&gt; <span class="number">64</span>))</span><br><span class="line">            v13 = (v13 - k * v14) % (<span class="number">1</span> &lt;&lt; <span class="number">128</span>)</span><br><span class="line">        ans.append((v13 % (<span class="number">1</span> &lt;&lt; <span class="number">64</span>), (v13 &gt;&gt; <span class="number">64</span>), (v15[<span class="number">2</span>] + v16[<span class="number">2</span>]) % (<span class="number">1</span> &lt;&lt; <span class="number">64</span>)))</span><br><span class="line">    <span class="keyword">return</span> ans</span><br><span class="line"></span><br><span class="line">al = [<span class="number">0x6369757120656854</span>, <span class="number">0x706d756a20786f66</span>, <span class="number">0x20797a616c206568</span>, <span class="number">0</span>]</span><br><span class="line">bl = [<span class="number">0x206e776f7262206b</span>, <span class="number">0x74207265766f2073</span>, <span class="number">0x80676f64</span>, <span class="number">0x2b</span>]</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> a, b <span class="keyword">in</span> zip(al, bl):</span><br><span class="line">    print(list(map(hex, calc(a, b)[<span class="number">256</span>])))</span><br></pre></td></tr></table></figure>
+<h2 id="GDB"><a class="header-anchor" href="#GDB"></a>GDB</h2>
+<p>另一個方法是我在賽後看 <a href="https://pastebin.com/Dj6wteXk">別人</a> 用的，在 gdb 寫 python 去 hook <code>13B0</code> 的開頭和結尾，在開頭判斷這組參數有沒有出現過了，跑過就把參數的 <code>depth</code> 設成 1 也就是 base case 讓他不要再往下遞迴了，而因為同一組函式的 <code>Start, End</code> Hook 沒辦法共享資訊，所以需要維護一個 <code>state</code> 來放目前的參數，在結尾的時候一樣是看這組參數有沒有出現過，有就把答案寫上去，沒有就把答案存起來下次就不會再跑一次了。</p>
+<figure class="highlight python"><figcaption><span>solve-gdb.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> gdb</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">register</span><span class="params">(name)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> int(gdb.parse_and_eval(name))</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">read</span><span class="params">(address, size)</span>:</span></span><br><span class="line">    inf = gdb.inferiors()[<span class="number">0</span>]</span><br><span class="line">    <span class="keyword">return</span> inf.read_memory(address, size).tobytes()</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">write</span><span class="params">(address, buf)</span>:</span></span><br><span class="line">    inf = gdb.inferiors()[<span class="number">0</span>]</span><br><span class="line">    inf.write_memory(address, buf)</span><br><span class="line"></span><br><span class="line">memory = &#123;&#125;</span><br><span class="line">state = []</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Start</span><span class="params">(gdb.Breakpoint)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, location)</span>:</span></span><br><span class="line">        super(Start, self).__init__(spec = location, type = gdb.BP_BREAKPOINT, internal = <span class="literal">False</span>, temporary = <span class="literal">False</span>)</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">stop</span><span class="params">(self)</span>:</span></span><br><span class="line">        state.append((register(<span class="string">'$rdi'</span>), register(<span class="string">'$rsi'</span>), register(<span class="string">'$rdx'</span>), register(<span class="string">'$rcx'</span>)))</span><br><span class="line">        <span class="keyword">if</span> memory.get(state[<span class="number">-1</span>][<span class="number">1</span>:]) <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">            gdb.execute(<span class="string">'set $rsi = 1'</span>)</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">End</span><span class="params">(gdb.Breakpoint)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, location)</span>:</span></span><br><span class="line">        super(End, self).__init__(spec = location, type = gdb.BP_BREAKPOINT, internal = <span class="literal">False</span>, temporary = <span class="literal">False</span>)</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">stop</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">global</span> state</span><br><span class="line">        buf, h = state[<span class="number">-1</span>][<span class="number">0</span>], state[<span class="number">-1</span>][<span class="number">1</span>:]</span><br><span class="line">        <span class="keyword">if</span> memory.get(h) <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">            memory[h] = (read(buf, <span class="number">8</span>), read(buf + <span class="number">8</span>, <span class="number">8</span>), read(buf + <span class="number">16</span>, <span class="number">8</span>))</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            write(buf, memory[h][<span class="number">0</span>])</span><br><span class="line">            write(buf + <span class="number">8</span>, memory[h][<span class="number">1</span>])</span><br><span class="line">            write(buf + <span class="number">16</span>, memory[h][<span class="number">2</span>])</span><br><span class="line">        state = state[:<span class="number">-1</span>]</span><br><span class="line"></span><br><span class="line">Start(<span class="string">f'*<span class="subst">&#123;<span class="number">0x0000555555554000</span> + <span class="number">0x13b0</span>&#125;</span>'</span>)</span><br><span class="line">End(<span class="string">f'*<span class="subst">&#123;<span class="number">0x0000555555554000</span> + <span class="number">0x1424</span>&#125;</span>'</span>)</span><br></pre></td></tr></table></figure>
+<p><code>gdb f-hash</code> 之後，在 gdb 裡面執行 <code>source solve-gdb.py</code> 就可以跑上面的程式碼了<br>
+或是也可以在執行 gdb 的時候就載入 <code>gdb -x solve-gdb.py f-hash</code></p>
+<h2 id="Frida"><a class="header-anchor" href="#Frida"></a>Frida</h2>
+<p>這個方法也是我賽後看 <a href="https://sectt.github.io/writeups/Volga20/f-hash/README">別人</a> 用的，frida 真的是好東西，之前剛好有研究一點 frida，第一次用在比賽中，基本上跟前一個解法一樣去 hook 函式的開頭和結尾，不過 frida 又更方便了，請看下面程式碼。</p>
+<figure class="highlight javascript"><figcaption><span>solve-frida.js</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> base = ptr(Process.enumerateModulesSync()[<span class="number">0</span>].base)</span><br><span class="line"><span class="keyword">var</span> recursive_func_ptr = base.add(<span class="number">0x13b0</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> mem = &#123;&#125;</span><br><span class="line">Interceptor.attach(recursive_func_ptr, &#123;</span><br><span class="line">    onEnter: <span class="function"><span class="keyword">function</span> (<span class="params">args</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.buf = args[<span class="number">0</span>]</span><br><span class="line">        <span class="keyword">this</span>.hash = args[<span class="number">1</span>] + <span class="string">'-'</span> + args[<span class="number">2</span>] + <span class="string">'-'</span> + args[<span class="number">3</span>]</span><br><span class="line">        <span class="keyword">if</span> (mem[<span class="keyword">this</span>.hash] !== <span class="literal">undefined</span>) &#123;</span><br><span class="line">            args[<span class="number">1</span>] = ptr(<span class="number">1</span>)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    onLeave: <span class="function"><span class="keyword">function</span> (<span class="params">retval</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (mem[<span class="keyword">this</span>.hash] === <span class="literal">undefined</span>) &#123;</span><br><span class="line">            mem[<span class="keyword">this</span>.hash] = [<span class="keyword">this</span>.buf.readU64(), <span class="keyword">this</span>.buf.add(<span class="number">8</span>).readU64(), <span class="keyword">this</span>.buf.add(<span class="number">16</span>).readU64()]</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">this</span>.buf.writeU64(mem[<span class="keyword">this</span>.hash][<span class="number">0</span>])</span><br><span class="line">            <span class="keyword">this</span>.buf.add(<span class="number">8</span>).writeU64(mem[<span class="keyword">this</span>.hash][<span class="number">1</span>])</span><br><span class="line">            <span class="keyword">this</span>.buf.add(<span class="number">16</span>).writeU64(mem[<span class="keyword">this</span>.hash][<span class="number">2</span>])</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>最後執行 <code>frida --no-pause --runtime=v8 -l solve-frida.js ./f-hash</code> 就可以了</p>
+<h2 id="Flag"><a class="header-anchor" href="#Flag"></a>Flag</h2>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">VolgaCTF&#123;16011432ba16efc8dcf779477985b3b9&#125;</span><br></pre></td></tr></table></figure>
+<hr>
+<ol>
+<li><a href="https://github.com/OAlienO/CTF/tree/master/2020/VolgaCTF/F-Hash">https://github.com/OAlienO/CTF/tree/master/2020/VolgaCTF/F-Hash</a></li>
+<li><a href="https://pastebin.com/Dj6wteXk">https://pastebin.com/Dj6wteXk</a></li>
+<li><a href="https://sectt.github.io/writeups/Volga20/f-hash/README">https://sectt.github.io/writeups/Volga20/f-hash/README</a></li>
+</ol>
+
+        </div>
+        
+        <div class="level is-size-7 is-uppercase">
+            <div class="level-start">
+                <div class="level-item">
+                    <span class="is-size-6 has-text-grey has-mr-7">#</span>
+                    <a class="has-link-grey -link" href="/tags/ctf/" rel="tag">ctf</a>, <a class="has-link-grey -link" href="/tags/frida/" rel="tag">frida</a>, <a class="has-link-grey -link" href="/tags/gdb/" rel="tag">gdb</a>, <a class="has-link-grey -link" href="/tags/reverse/" rel="tag">reverse</a>, <a class="has-link-grey -link" href="/tags/security/" rel="tag">security</a>, <a class="has-link-grey -link" href="/tags/writeups/" rel="tag">writeups</a>
+                </div>
+            </div>
+        </div>
+        
+        
+        
+    </div>
+</div>
+
+
+
+
+
+<div class="card card-transparent">
+    <div class="level post-navigation is-flex-wrap is-mobile">
+        
+        <div class="level-start">
+            <a class="level level-item has-link-grey  article-nav-prev" href="/2020/06/09/security/writeups/ais3-2020-preexam/">
+                <i class="level-item fas fa-chevron-left"></i>
+                <span class="level-item">[Writeups] AIS3 pre-exam 2020</span>
+            </a>
+        </div>
+        
+        
+        <div class="level-end">
+            <a class="level level-item has-link-grey  article-nav-next" href="/2020/03/20/security/crypto/knapsack-crypto/">
+                <span class="level-item">[後量子密碼] Knapsack Cryptosystem and Subset-Sum Problem</span>
+                <i class="level-item fas fa-chevron-right"></i>
+            </a>
+        </div>
+        
+    </div>
+</div>
+
+
+
+<div class="card">
+    <div class="card-content">
+        <h3 class="title is-5 has-text-weight-normal">Comments</h3>
+        
+<script>
+    var disqus_config = function () {
+        this.page.url = 'https://oalieno.github.io/2020/05/04/security/writeups/f-hash/';
+        this.page.identifier = '2020/05/04/security/writeups/f-hash/';
+    };
+    (function() {
+        var d = document, s = d.createElement('script');  
+        s.src = '//' + 'oalieno' + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+
+<div id="disqus_thread">
+    
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+    </div>
+</div>
+</div>
+                
+
+
+
+
+<div class="column is-3-tablet is-3-desktop is-3-widescreen  has-order-1 column-left ">
+    
+        
+<div class="card widget">
+    <div class="card-content">
+        <nav class="level">
+            <div class="level-item has-text-centered" style="flex-shrink: 1">
+                <div>
+                    
+                    <figure class="image is-128x128 has-mb-6">
+                        <img class="is-rounded" src="https://www.gravatar.com/avatar/dd413429dc0e386a4dfdb890e39dd038?s=512" alt="oalieno">
+                    </figure>
+                    
+                    <p class="is-size-4 is-block">
+                        oalieno
+                    </p>
+                    
+                    
+                    
+                    <p class="is-size-6 is-flex is-flex-center has-text-grey">
+                        <i class="fas fa-map-marker-alt has-mr-7"></i>
+                        <span>Taiwan</span>
+                    </p>
+                    
+                </div>
+            </div>
+        </nav>
+        <nav class="level is-mobile">
+            <div class="level-item has-text-centered is-marginless">
+                <div>
+                    <p class="heading">
+                        Posts
+                    </p>
+                    <a href="/archives">
+                        <p class="title has-text-weight-normal">
+                            23
+                        </p>
+                    </a>
+                </div>
+            </div>
+            <div class="level-item has-text-centered is-marginless">
+                <div>
+                    <p class="heading">
+                        Categories
+                    </p>
+                    <a href="/categories">
+                        <p class="title has-text-weight-normal">
+                            8
+                        </p>
+                    </a>
+                </div>
+            </div>
+            <div class="level-item has-text-centered is-marginless">
+                <div>
+                    <p class="heading">
+                        Tags
+                    </p>
+                    <a href="/tags">
+                        <p class="title has-text-weight-normal">
+                            37
+                        </p>
+                    </a>
+                </div>
+            </div>
+        </nav>
+        
+        <div class="level">
+            <a class="level-item button is-link is-rounded" href="https://github.com/oalieno" target="_blank" rel="noopener" style="border-radius: 3px">
+                Follow</a>
+        </div>
+        
+        
+        
+        <div class="level is-mobile">
+            
+            <a class="level-item button is-white is-marginless" target="_blank" rel="noopener"
+                title="Github" href="https://github.com/oalieno">
+                
+                <i class="fab fa-github"></i>
+                
+            </a>
+            
+            <a class="level-item button is-white is-marginless" target="_blank" rel="noopener"
+                title="Ig" href="https://www.instagram.com/oalieno">
+                
+                <i class="fab fa-ig"></i>
+                
+            </a>
+            
+            <a class="level-item button is-white is-marginless" target="_blank" rel="noopener"
+                title="In" href="https://www.linkedin.com/in/oalieno/">
+                
+                <i class="fab fa-linkedin"></i>
+                
+            </a>
+            
+        </div>
+        
+    </div>
+</div>
+    
+        
+
+    <div class="card widget" id="toc">
+        <div class="card-content">
+            <div class="menu">
+                <h3 class="menu-label">
+                    Catalogue
+                </h3>
+                <ul class="menu-list"><li>
+        <a class="is-flex" href="#Rewrite-Function-with-Python">
+        <span class="has-mr-6">1</span>
+        <span>Rewrite Function with Python</span>
+        </a></li><li>
+        <a class="is-flex" href="#GDB">
+        <span class="has-mr-6">2</span>
+        <span>GDB</span>
+        </a></li><li>
+        <a class="is-flex" href="#Frida">
+        <span class="has-mr-6">3</span>
+        <span>Frida</span>
+        </a></li><li>
+        <a class="is-flex" href="#Flag">
+        <span class="has-mr-6">4</span>
+        <span>Flag</span>
+        </a></li></ul>
+            </div>
+        </div>
+    </div>
+
+    
+        
+<div class="card widget">
+    <div class="card-content">
+        <div class="menu">
+            <h3 class="menu-label">
+                Categories
+            </h3>
+            <ul class="menu-list">
+            <li>
+        <a class="level is-marginless" href="/categories/algorithm/">
+            <span class="level-start">
+                <span class="level-item">algorithm</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">1</span>
+            </span>
+        </a></li><li>
+        <a class="level is-marginless" href="/categories/security/">
+            <span class="level-start">
+                <span class="level-item">security</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">14</span>
+            </span>
+        </a><ul><li>
+        <a class="level is-marginless" href="/categories/security/crypto/">
+            <span class="level-start">
+                <span class="level-item">crypto</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">1</span>
+            </span>
+        </a></li><li>
+        <a class="level is-marginless" href="/categories/security/news/">
+            <span class="level-start">
+                <span class="level-item">news</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">1</span>
+            </span>
+        </a></li><li>
+        <a class="level is-marginless" href="/categories/security/osint/">
+            <span class="level-start">
+                <span class="level-item">osint</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">1</span>
+            </span>
+        </a></li><li>
+        <a class="level is-marginless" href="/categories/security/pwn/">
+            <span class="level-start">
+                <span class="level-item">pwn</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">3</span>
+            </span>
+        </a></li><li>
+        <a class="level is-marginless" href="/categories/security/reverse/">
+            <span class="level-start">
+                <span class="level-item">reverse</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">3</span>
+            </span>
+        </a></li><li>
+        <a class="level is-marginless" href="/categories/security/writeups/">
+            <span class="level-start">
+                <span class="level-item">writeups</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">5</span>
+            </span>
+        </a></li></ul></li>
+            </ul>
+        </div>
+    </div>
+</div>
+    
+        <div class="card widget">
+    <div class="card-content">
+        <h3 class="menu-label">
+            Tag Cloud
+        </h3>
+        <a href="/tags/LINE-TAXI/" style="font-size: 10px;">LINE TAXI</a> <a href="/tags/adb/" style="font-size: 10px;">adb</a> <a href="/tags/algorithm/" style="font-size: 10px;">algorithm</a> <a href="/tags/android/" style="font-size: 13.33px;">android</a> <a href="/tags/blockchain/" style="font-size: 10px;">blockchain</a> <a href="/tags/burp/" style="font-size: 10px;">burp</a> <a href="/tags/crypto/" style="font-size: 11.67px;">crypto</a> <a href="/tags/ctf/" style="font-size: 18.33px;">ctf</a> <a href="/tags/drony/" style="font-size: 10px;">drony</a> <a href="/tags/frida/" style="font-size: 11.67px;">frida</a> <a href="/tags/gdb/" style="font-size: 10px;">gdb</a> <a href="/tags/hexo/" style="font-size: 13.33px;">hexo</a> <a href="/tags/icarus/" style="font-size: 13.33px;">icarus</a> <a href="/tags/iterm2/" style="font-size: 10px;">iterm2</a> <a href="/tags/kernel/" style="font-size: 10px;">kernel</a> <a href="/tags/knapsack/" style="font-size: 10px;">knapsack</a> <a href="/tags/lattice/" style="font-size: 10px;">lattice</a> <a href="/tags/netflix/" style="font-size: 10px;">netflix</a> <a href="/tags/news/" style="font-size: 10px;">news</a> <a href="/tags/nord/" style="font-size: 10px;">nord</a> <a href="/tags/nox/" style="font-size: 10px;">nox</a> <a href="/tags/osint/" style="font-size: 10px;">osint</a> <a href="/tags/powerlevel10k/" style="font-size: 10px;">powerlevel10k</a> <a href="/tags/powerlevel9k/" style="font-size: 10px;">powerlevel9k</a> <a href="/tags/pwn/" style="font-size: 15px;">pwn</a> <a href="/tags/pyc/" style="font-size: 10px;">pyc</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/reverse/" style="font-size: 15px;">reverse</a> <a href="/tags/rootkit/" style="font-size: 10px;">rootkit</a> <a href="/tags/rsa/" style="font-size: 10px;">rsa</a> <a href="/tags/security/" style="font-size: 20px;">security</a> <a href="/tags/seo/" style="font-size: 10px;">seo</a> <a href="/tags/srop/" style="font-size: 10px;">srop</a> <a href="/tags/subset-sum/" style="font-size: 10px;">subset-sum</a> <a href="/tags/writeups/" style="font-size: 16.67px;">writeups</a> <a href="/tags/zimfw/" style="font-size: 10px;">zimfw</a> <a href="/tags/zsh/" style="font-size: 10px;">zsh</a>
+    </div>
+</div>
+    
+        <div class="card widget">
+    <div class="card-content">
+        <h3 class="menu-label">
+            Recent
+        </h3>
+        
+        <article class="media">
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-08-16T08:24:04.000Z">2020-08-16</time></div>
+                    <a href="/2020/08/16/security/news/clipboard-hijack/" class="title has-link-black-ter is-size-6 has-text-weight-normal">Clipboard hijacking cryptocurrency malware on tradingview.com</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/security/">security</a> / <a class="has-link-grey -link" href="/categories/security/news/">news</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-07-30T16:29:25.000Z">2020-07-31</time></div>
+                    <a href="/2020/07/31/security/osint/maltego/" class="title has-link-black-ter is-size-6 has-text-weight-normal">[小工具] Maltego</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/security/">security</a> / <a class="has-link-grey -link" href="/categories/security/osint/">osint</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-06-09T14:29:00.000Z">2020-06-09</time></div>
+                    <a href="/2020/06/09/security/writeups/ais3-2020-preexam/" class="title has-link-black-ter is-size-6 has-text-weight-normal">[Writeups] AIS3 pre-exam 2020</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/security/">security</a> / <a class="has-link-grey -link" href="/categories/security/writeups/">writeups</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-05-04T06:33:13.000Z">2020-05-04</time></div>
+                    <a href="/2020/05/04/security/writeups/f-hash/" class="title has-link-black-ter is-size-6 has-text-weight-normal">[Writeups] VolgaCTF Quals 2020 - F-Hash</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/security/">security</a> / <a class="has-link-grey -link" href="/categories/security/writeups/">writeups</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-03-20T13:11:11.000Z">2020-03-20</time></div>
+                    <a href="/2020/03/20/security/crypto/knapsack-crypto/" class="title has-link-black-ter is-size-6 has-text-weight-normal">[後量子密碼] Knapsack Cryptosystem and Subset-Sum Problem</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/security/">security</a> / <a class="has-link-grey -link" href="/categories/security/crypto/">crypto</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+    </div>
+</div>
+    
+        <div class="card widget">
+    <div class="card-content">
+        <div class="menu">
+        <h3 class="menu-label">
+            Archives
+        </h3>
+        <ul class="menu-list">
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/08/">
+                <span class="level-start">
+                    <span class="level-item">August 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/07/">
+                <span class="level-start">
+                    <span class="level-item">July 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/06/">
+                <span class="level-start">
+                    <span class="level-item">June 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/05/">
+                <span class="level-start">
+                    <span class="level-item">May 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/03/">
+                <span class="level-start">
+                    <span class="level-item">March 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">2</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/02/">
+                <span class="level-start">
+                    <span class="level-item">February 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">5</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/01/">
+                <span class="level-start">
+                    <span class="level-item">January 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">2</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2019/09/">
+                <span class="level-start">
+                    <span class="level-item">September 2019</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2019/06/">
+                <span class="level-start">
+                    <span class="level-item">June 2019</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">3</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2019/05/">
+                <span class="level-start">
+                    <span class="level-item">May 2019</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2019/04/">
+                <span class="level-start">
+                    <span class="level-item">April 2019</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">2</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2019/03/">
+                <span class="level-start">
+                    <span class="level-item">March 2019</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">2</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2018/11/">
+                <span class="level-start">
+                    <span class="level-item">November 2018</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        </ul>
+        </div>
+    </div>
+</div>
+    
+    
+        <div class="column-right-shadow is-hidden-widescreen ">
+        
+        </div>
+    
+</div>
+
+                
+            </div>
+        </div>
+    </section>
+    <footer class="footer">
+    <div class="container">
+        <div class="level">
+            <div class="level-start has-text-centered-mobile">
+                <a class="footer-logo is-block has-mb-6" href="/">
+                
+                    oalieno blog
+                
+                </a>
+                <p class="is-size-7">
+                &copy; 2020 oalieno&nbsp;
+                Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> & <a
+                        href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a>
+                
+                <br>
+                <span id="busuanzi_container_site_uv">
+                Visited by <span id="busuanzi_value_site_uv">0</span> users
+                </span>
+                
+                </p>
+            </div>
+            <div class="level-end">
+            
+                <div class="field has-addons is-flex-center-mobile has-mt-5-mobile is-flex-wrap is-flex-middle">
+                
+                <p class="control">
+                    <a class="button is-white is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/">
+                        
+                        <i class="fab fa-creative-commons"></i>
+                        
+                    </a>
+                </p>
+                
+                <p class="control">
+                    <a class="button is-white is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/">
+                        
+                        <i class="fab fa-creative-commons-by"></i>
+                        
+                    </a>
+                </p>
+                
+                <p class="control">
+                    <a class="button is-white is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/oalieno/oalieno.github.io">
+                        
+                        <i class="fab fa-github"></i>
+                        
+                    </a>
+                </p>
+                
+                </div>
+            
+            </div>
+        </div>
+    </div>
+</footer>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script>
+<script>moment.locale("en");</script>
+
+
+<script>
+var IcarusThemeSettings = {
+    site: {
+        url: 'https://oalieno.github.io',
+        external_link: {"enable":true,"exclude":[]}
+    },
+    article: {
+        highlight: {
+            clipboard: true,
+            fold: 'unfolded'
+        }
+    },
+    github: {
+        url: 'https://github.com/oalieno/oalieno.github.io'
+    }
+};
+</script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script>
+
+
+
+
+
+<script src="/js/animation.js"></script>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/lightgallery@1.6.8/dist/js/lightgallery.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.7.0/dist/js/jquery.justifiedGallery.min.js" defer></script>
+<script src="/js/gallery.js" defer></script>
+
+
+
+<div id="outdated">
+    <h6>Your browser is out-of-date!</h6>
+    <p>Update your browser to view this website correctly. <a id="btnUpdateBrowser" href="http://outdatedbrowser.com/">Update
+            my browser now </a></p>
+    <p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">&times;</a></p>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.js" defer></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        outdatedBrowser({
+            bgColor: '#f25648',
+            color: '#ffffff',
+            lowerThan: 'flex'
+        });
+    });
+</script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.5/unpacked/MathJax.js?config=TeX-MML-AM_CHTML" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    MathJax.Hub.Config({
+        'HTML-CSS': {
+            matchFontHeight: false
+        },
+        SVG: {
+            matchFontHeight: false
+        },
+        CommonHTML: {
+            matchFontHeight: false
+        },
+        tex2jax: {
+            inlineMath: [
+                ['$','$'],
+                ['\\(','\\)']
+            ]
+        }
+    });
+});
+</script>
+
+
+<a id="bottom-to-top" title="plugin.bottomtotop" href="javascript:;">
+    <i class="fas fa-chevron-up"></i>
+</a>
+<script src="/js/bottom-to-top.js" defer></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script src="/js/main.js" defer></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lazysizes/5.2.0/lazysizes.min.js" defer></script>
+
+    
+    <div class="searchbox ins-search">
+    <div class="searchbox-container ins-search-container">
+        <div class="searchbox-input-wrapper">
+            <input type="text" class="searchbox-input ins-search-input" placeholder="Type something..." />
+            <span class="searchbox-close ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="searchbox-result-wrapper ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+    (function (window) {
+        var INSIGHT_CONFIG = {
+            TRANSLATION: {
+                POSTS: 'Posts',
+                PAGES: 'Pages',
+                CATEGORIES: 'Categories',
+                TAGS: 'Tags',
+                UNTITLED: '(Untitled)',
+            },
+            CONTENT_URL: '/content.json',
+        };
+        window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+    })(window);
+</script>
+<script src="/js/insight.js" defer></script>
+<link rel="stylesheet" href="/css/search.css">
+<link rel="stylesheet" href="/css/insight.css">
+    
+</body>
+</html>

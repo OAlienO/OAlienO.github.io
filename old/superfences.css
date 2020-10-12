@@ -1,0 +1,30 @@
+.md-typeset .superfences-content {
+  display: none;
+  order: 99;
+  width: 100%;
+  background-color: white; }
+  .md-typeset .superfences-content > * {
+    margin: 0;
+    border-radius: 0; }
+
+.md-typeset .superfences-tabs {
+  display: flex;
+  position: relative;
+  flex-wrap: wrap;
+  margin: 1em 0;
+  border: 0.1rem solid rgba(0, 0, 0, 0.07);
+  border-radius: 0.2em; }
+  .md-typeset .superfences-tabs > input {
+    display: none; }
+    .md-typeset .superfences-tabs > input:checked + label {
+      font-weight: 700; }
+      .md-typeset .superfences-tabs > input:checked + label + .superfences-content {
+        display: block; }
+  .md-typeset .superfences-tabs > label {
+    width: auto;
+    padding: 1.2rem 1.2rem;
+    transition: color 0.125s;
+    font-size: 1.28rem;
+    cursor: pointer; }
+    html .md-typeset .superfences-tabs > label:hover {
+      color: #536dfe; }

