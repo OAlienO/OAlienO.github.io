@@ -239,7 +239,7 @@
         
         <h1 class="title is-size-3 is-size-4-mobile has-text-weight-normal">
             
-                <a class="has-link-black-ter" href="/2020/07/31/security/osint/maltego/">[小工具] Maltego</a>
+                <a class="has-link-black-ter" href="/2020/07/31/security/osint/maltego/">【小工具】Maltego</a>
             
         </h1>
         <div class="content">
@@ -313,7 +313,7 @@
         
         <h1 class="title is-size-3 is-size-4-mobile has-text-weight-normal">
             
-                <a class="has-link-black-ter" href="/2020/06/09/security/writeups/ais3-2020-preexam/">[Writeups] AIS3 pre-exam 2020</a>
+                <a class="has-link-black-ter" href="/2020/06/09/security/writeups/ais3-2020-preexam/">【Writeups】AIS3 pre-exam 2020</a>
             
         </h1>
         <div class="content">
@@ -531,7 +531,7 @@ $$</p>
         
         <h1 class="title is-size-3 is-size-4-mobile has-text-weight-normal">
             
-                <a class="has-link-black-ter" href="/2020/05/04/security/writeups/f-hash/">[Writeups] VolgaCTF Quals 2020 - F-Hash</a>
+                <a class="has-link-black-ter" href="/2020/05/04/security/writeups/f-hash/">【Writeups】VolgaCTF Quals 2020 - F-Hash</a>
             
         </h1>
         <div class="content">
@@ -588,165 +588,6 @@ $$</p>
         
         <div class="level article-meta is-size-7 is-uppercase is-mobile is-overflow-x-auto">
             <div class="level-left">
-                <time class="level-item has-text-grey" datetime="2020-03-20T13:11:11.000Z">2020-03-20</time>
-                
-                <div class="level-item">
-                <a class="has-link-grey -link" href="/categories/security/">security</a>&nbsp;/&nbsp;<a class="has-link-grey -link" href="/categories/security/crypto/">crypto</a>
-                </div>
-                
-                
-                <span class="level-item has-text-grey">
-                    
-                    
-                    9 minutes read (About 1318 words)
-                </span>
-                
-                
-            </div>
-        </div>
-        
-        <h1 class="title is-size-3 is-size-4-mobile has-text-weight-normal">
-            
-                <a class="has-link-black-ter" href="/2020/03/20/security/crypto/knapsack-crypto/">[後量子密碼] Knapsack Cryptosystem and Subset-Sum Problem</a>
-            
-        </h1>
-        <div class="content">
-            <p>這是<strong>楊柏因</strong>老師在台大開的<strong>後量子密碼學</strong>的筆記<br>
-參考教科書 <a href="https://link.springer.com/book/10.1007/978-1-4939-1711-2">An Introduction to Mathematical Cryptography</a> 7.2 章節</p>
-<hr>
-<p>今天要介紹的是 Knapsack Cryptosystem，他是基於 Subset-Sum Problem 這個 NP-Complete 問題所設計出來的公鑰密碼系統。這個系統剛提出就被破解，然後又改良，再被破解，然後再改良，又再被破解…基本上是一個壞掉的密碼系統。</p>
-<h2 id="Subset-Sum-Problem"><a class="header-anchor" href="#Subset-Sum-Problem"></a>Subset-Sum Problem</h2>
-<p>給 n 個數字組成的集合 $M = (m_1, m_2, \cdots, m_n)$ 和一個整數 $S$，求哪一個 $M$ 的子集合加起來是 $S$</p>
-<details class="admonition example" open><summary>舉例來說</summary><p><p>假設 $M = (2,3,4,9,14,23)$, $S = 21$<br>
-那答案就會是 $\{ 3, 4, 14 \}$，因為 $3 + 4 + 14 = 21$</p>
-</p></details>
-<h3 id="Collision-Attack"><a class="header-anchor" href="#Collision-Attack"></a>Collision Attack</h3>
-<p>直接爆搜需要 $O(2^n)$，一個簡單的優化是，我們可以把 $M$ 切成兩半，分別暴搜前半和後半，並把答案存起來，然後只要兩半加起來是 $S$ 我們就找到了，這樣只需要 $O(2^{n/2})$ 的時間但需要額外 $O(2^{n/2})$ 的空間，是一個以空間換取時間的例子，這個手法和 Double DES 的 Meet-in-the-Middle 一樣。</p>
-<details class="admonition example" open><summary>舉例來說</summary><p><p>以剛剛的例子來看就是下面這樣</p>
-<table>
-<thead>
-<tr>
-<th>前半</th>
-<th>後半</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>{} = 0</td>
-<td>{} = 0</td>
-</tr>
-<tr>
-<td>{2} = 2</td>
-<td>{9} = 9</td>
-</tr>
-<tr>
-<td>{2, 3} = 5</td>
-<td><strong>{14} = 14</strong></td>
-</tr>
-<tr>
-<td><strong>{3, 4} = 7</strong></td>
-<td>{9, 14} = 23</td>
-</tr>
-<tr>
-<td>…</td>
-<td>…</td>
-</tr>
-</tbody>
-</table>
-</p></details>
-<h3 id="Superincreasing-Sequence"><a class="header-anchor" href="#Superincreasing-Sequence"></a>Superincreasing Sequence</h3>
-<p>一個公鑰密碼系統要有一個 trapdoor，也就是要留個後門讓我們用私鑰解得出來，但監聽者沒有私鑰解不出來，而現在的 Subset-Sum Problem 是個 NP-Complete 問題大家都解不出來，這樣不行，所以這時候我們引入這個 Superincreasing Sequence 來幫助我們設計 trapdoor。</p>
-<details class="admonition abstract" open><summary>Superincreasing Sequence</summary><p><p>序列 $R = (r_1, r_2, \cdots, r_n)$ 滿足 $2 r_i \le r_{i+1} \ \forall \ 1 \le i &lt; n$</p>
-</p></details>
-<details class="admonition example" open><summary>舉例來說</summary><p><p>$(1, 2, 4, 8, 16)$ 和 $(2, 5, 12, 24, 50)$ 都是 Superincreasing Sequence</p>
-</p></details>
-<p>這個 Superincreasing Sequence 有個性質是 $r_1 + r_2 + \cdots + r_{k-1} &lt; r_k \ \forall \ 2 \le k \le n$，這可以很簡單的用數學歸納法證明，我就不贅述了。</p>
-<p>如果 Subset-Sum Problem 的集合是一個 Superincreasing Sequence，我們可以很容易的算出答案。算法是只要最後一項大於等於 $S$，就一定要選他，因為他比前面所有項加起來都大，不選他就不可能組合出 $S$，那選了最後一項之後就把他從 $S$ 中扣掉，然後考慮前面 n - 1 項，又是一樣的子問題，照一樣的方法解就行了，如果一開始最後一項小於 $S$，那就更簡單了直接忽略他，考慮剩下的 n - 1 項的子問題。</p>
-<h2 id="Knapsack-Cryptosystem"><a class="header-anchor" href="#Knapsack-Cryptosystem"></a>Knapsack Cryptosystem</h2>
-<h3 id="產生密鑰"><a class="header-anchor" href="#產生密鑰"></a>產生密鑰</h3>
-<p>選兩個整數 $A, B$，再選一組 Superincreasing Sequence $R = (r_1, r_2, \cdots, r_n)$，$A, B$ 必須滿足 $\gcd(A, B) = 1$ 且 $2 r_n &lt; B$，然後計算 $m_i \equiv A r_i \pmod{B}$，這樣 $M = (m_1, m_2, \cdots, m_n)$ 就是公鑰，$A, B$ 就是私鑰。</p>
-<details class="admonition example" open><summary>舉例來說</summary><p><p>$選 A = 113, B = 250, r = (3, 11, 24, 50, 115)$，計算 $M \equiv (113·3,113·11,113·24,113·50,113·115) = (89, 243, 212, 150, 245) \pmod{250}$<br>
-公鑰是 $(89, 243, 212, 150, 245)$，私鑰是 $113, 250$</p>
-</p></details>
-<h3 id="加密"><a class="header-anchor" href="#加密"></a>加密</h3>
-<p>先把明文 $x$ 轉成二元陣列 $(x_1, x_2, \cdots, x_n)$，計算密文 $S = \sum_{i=1}^{n} x_i M_i$</p>
-<details class="admonition example" open><summary>舉例來說</summary><p><p>明文 $x$ 是 $(1, 0, 1, 0, 1)$，計算密文 $S = x·M = 1·89 + 0·243 + 1·212 + 0·150 + 1·245 = 546$</p>
-</p></details>
-<h3 id="解密"><a class="header-anchor" href="#解密"></a>解密</h3>
-<p>用私鑰 $A, B$ 把公鑰轉成 Superincreasing Sequence $r_i \equiv A^{-1} m_i \pmod{B}$，計算 $S’ \equiv A^{-1} S \pmod{B}$，然後解 $R$ 和 $S’$ 構成的 Subset-Sum Problem</p>
-<details class="admonition example" open><summary>舉例來說</summary><p><p>還原回 $r$ 之後，計算 $S’ \equiv 177·546 = 142 \pmod{250}$，再來就解 Subset-Sum Problem 如下<br>
-142 &gt;= 115，選，剩下 27<br>
-27 &lt; 50，不選<br>
-27 &gt;= 24，選，剩下 3<br>
-3 &lt; 11，不選<br>
-3 &gt;= 3，選，結束<br>
-答案是 $(1, 0, 1, 0, 1)$</p>
-</p></details>
-<h3 id="參數大小"><a class="header-anchor" href="#參數大小"></a>參數大小</h3>
-<p>因為有 collision attack，所以要有 $2^{80}$ 的安全性需要 $n &gt; 160$，也就是要兩倍長度。如果 $r_1$ 太小，也會被<a href="https://crypto.stackexchange.com/questions/50068/how-to-attack-merkle-hellman-cryptosystem-if-the-first-element-in-the-superincre">破解</a>，所以 $2^n &lt; r_1$ 那 $2^{2n} &lt; r_n &lt; B$ 才夠安全，粗略估算起來公鑰是 $n$ 個 $2^{2n}$ 大小的集合，總共 $2n^2$ 個 bits，而又因為接下來要介紹的 lattice attack 的存在，使得 $n &gt; 300$ 才算安全，這樣公鑰就會有 $2n^2 = 180000 bits \approx 176 kB$，已經大到不堪用了。</p>
-<h3 id="Lattice-Attack"><a class="header-anchor" href="#Lattice-Attack"></a>Lattice Attack</h3>
-<p>假設我們的 Subset-Sum Problem 要找的集合是 $M = (m_1, m_2, \cdots, m_n)$ 總和是 $S$，那我們構造下面這樣的矩陣</p>
-<p>$$<br>
-\begin{pmatrix}<br>
-2 &amp; 0 &amp; 0 &amp; \cdots &amp; 0 &amp; m_1 \\<br>
-0 &amp; 2 &amp; 0 &amp; \cdots &amp; 0 &amp; m_2 \\<br>
-0 &amp; 0 &amp; 2 &amp; \cdots &amp; 0 &amp; m_3 \\<br>
-\vdots &amp; \vdots &amp; \vdots &amp; \ddots &amp; \vdots &amp; \vdots \\<br>
-0 &amp; 0 &amp; 0 &amp; \cdots &amp; 2 &amp; m_n \\<br>
-1 &amp; 1 &amp; 1 &amp; \cdots &amp; 1 &amp; S<br>
-\end{pmatrix} = \begin{pmatrix}<br>
-v_1 \\<br>
-v_2 \\<br>
-\vdots \\<br>
-v_n \\<br>
-v_{n+1}<br>
-\end{pmatrix}<br>
-$$</p>
-<p>接下來考慮以 $v_1, v_2, \cdots, v_{n+1}$ 為 basis 構成的 lattice $L$，那 $t$ 會是其中的一個 short vector</p>
-<p>$$<br>
-t =<br>
-\begin{pmatrix} x_1 &amp; x_2 &amp; \cdots &amp; x_n &amp; -1 \end{pmatrix}<br>
-\begin{pmatrix}<br>
-v_1 \\<br>
-v_2 \\<br>
-\vdots \\<br>
-v_n \\<br>
-v_{n+1}<br>
-\end{pmatrix}<br>
-= \begin{pmatrix} 2 x_1 - 1 &amp; 2 x_2 - 1 &amp; \cdots &amp; 2 x_n - 1 &amp; 0 \end{pmatrix}<br>
-$$</p>
-<p>其中 $x = (x_1, x_2, \cdots, x_n, -1)$ 是這個 Subset-Sum Problem 的答案<br>
-$x$ 的每一項都等於 0 或 1，而 $t$ 的值除了最後一項是 0 其他都是 $\pm 1$，$m$ 的值根據剛剛在<a href="#參數大小">參數大小</a>的推論大約是 $2^{2n}$，$S$ 也是，所以相對於 $m$ 和 $S$ 的大小，$t$ 是一個長度為 $\sqrt{n}$ 的 short vector in $L$，最後我們只要用 LLL 或 LLL-BKZ 之類的演算法來找 $L$ 中的 short vector 就可以找到 $t$，找到 $t$ 就可以還原 $x$ 了</p>
-
-        </div>
-        
-        
-        <div class="level is-mobile readmore-button">
-            <div class="level-start">
-                <div class="level-item">
-                <a class="button is-size-7 is-light" href="/2020/03/20/security/crypto/knapsack-crypto/#more">Read More</a>
-                </div>
-            </div>
-        </div>
-        
-        
-    </div>
-</div>
-
-
-
-
-
-
-
-
-    
-<div class="card card-readmore">
-    
-    <div class="card-content article ">
-        
-        <div class="level article-meta is-size-7 is-uppercase is-mobile is-overflow-x-auto">
-            <div class="level-left">
                 <time class="level-item has-text-grey" datetime="2020-03-18T12:31:14.000Z">2020-03-18</time>
                 
                 <div class="level-item">
@@ -766,7 +607,7 @@ $x$ 的每一項都等於 0 或 1，而 $t$ 的值除了最後一項是 0 其他
         
         <h1 class="title is-size-3 is-size-4-mobile has-text-weight-normal">
             
-                <a class="has-link-black-ter" href="/2020/03/18/security/reverse/android-proxy/">[安卓逆向] 透過 Burp Suite Proxy 夜神模擬器</a>
+                <a class="has-link-black-ter" href="/2020/03/18/security/reverse/android-proxy/">【安卓逆向】透過 Burp Suite Proxy 夜神模擬器</a>
             
         </h1>
         <div class="content">
@@ -845,7 +686,7 @@ $x$ 的每一項都等於 0 或 1，而 $t$ 的值除了最後一項是 0 其他
         
         <h1 class="title is-size-3 is-size-4-mobile has-text-weight-normal">
             
-                <a class="has-link-black-ter" href="/2020/02/22/blog02/">部落格開發日誌 0x02</a>
+                <a class="has-link-black-ter" href="/2020/02/22/blog02/">【部落格開發日誌】0x02</a>
             
         </h1>
         <div class="content">
@@ -941,7 +782,7 @@ $x$ 的每一項都等於 0 或 1，而 $t$ 的值除了最後一項是 0 其他
         
         <h1 class="title is-size-3 is-size-4-mobile has-text-weight-normal">
             
-                <a class="has-link-black-ter" href="/2020/02/16/security/reverse/frida/">[安卓逆向] Frida Hook 動態調試</a>
+                <a class="has-link-black-ter" href="/2020/02/16/security/reverse/frida/">【安卓逆向】Frida Hook 動態調試</a>
             
         </h1>
         <div class="content">
@@ -1036,7 +877,7 @@ A : <code>a</code> 存取函式，<code>_a</code> 存取變數</p>
         
         <h1 class="title is-size-3 is-size-4-mobile has-text-weight-normal">
             
-                <a class="has-link-black-ter" href="/2020/02/15/security/reverse/android-emulator/">[安卓逆向] Android Studio Emulator + ADB 環境佈置</a>
+                <a class="has-link-black-ter" href="/2020/02/15/security/reverse/android-emulator/">【安卓逆向】Android Studio Emulator + ADB 環境佈置</a>
             
         </h1>
         <div class="content">
@@ -1157,7 +998,7 @@ A : 先用 <code>pm path com.example.test_app</code> 找出 apk 的路徑，再�
         
         <h1 class="title is-size-3 is-size-4-mobile has-text-weight-normal">
             
-                <a class="has-link-black-ter" href="/2020/02/15/line-taxi/">LINE TAXI 實測 - 輸入「ATAAKH」優惠序號 現折 50 元</a>
+                <a class="has-link-black-ter" href="/2020/02/15/line-taxi/">【實測】LINE TAXI 乘車體驗 - 輸入「ATAAKH」優惠序號 現折 50 元</a>
             
         </h1>
         <div class="content">
@@ -1186,6 +1027,75 @@ A : 先用 <code>pm path com.example.test_app</code> 找出 apk 的路徑，再�
             <div class="level-start">
                 <div class="level-item">
                 <a class="button is-size-7 is-light" href="/2020/02/15/line-taxi/#more">Read More</a>
+                </div>
+            </div>
+        </div>
+        
+        
+    </div>
+</div>
+
+
+
+
+
+
+
+
+    
+<div class="card card-readmore">
+    
+    <div class="card-content article ">
+        
+        <div class="level article-meta is-size-7 is-uppercase is-mobile is-overflow-x-auto">
+            <div class="level-left">
+                <time class="level-item has-text-grey" datetime="2020-02-08T15:02:00.000Z">2020-02-08</time>
+                
+                
+                <span class="level-item has-text-grey">
+                    
+                    
+                    2 minutes read (About 307 words)
+                </span>
+                
+                
+            </div>
+        </div>
+        
+        <h1 class="title is-size-3 is-size-4-mobile has-text-weight-normal">
+            
+                <a class="has-link-black-ter" href="/2020/02/08/blog01/">【部落格開發日誌】0x01</a>
+            
+        </h1>
+        <div class="content">
+            <p>部落格架好後，趁熱使用一下各種網站追蹤評測的工具，比如 <a href="https://search.google.com/search-console">Google Search Console</a>, <a href="https://analytics.google.com/analytics/web/">Google Analytics</a>, <a href="https://developers.google.com/speed/pagespeed/insights/">PageSpeed Insights</a>, <a href="https://sitechecker.pro/">Sitechecker</a>, <a href="https://www.hotjar.com/">Hotjar</a></p>
+<h2 id="Hotjar"><a class="header-anchor" href="#Hotjar"></a>Hotjar</h2>
+<p>記錄使用者點擊的 heatmap</p>
+<p align="center"><img data-src="/images/hotjar-heatmap.png" class=" lazyload"  width="800" title="hotjar heatmap example"></p>
+<p>記錄使用者游標移動的路徑</p>
+<p align="center"><img data-src="/images/hotjar-record.gif" class=" lazyload"  width="800" title="hotjar record example"></p>
+<p>還可以收集使用者的 feedback 回饋，不過載入時間有點久，部落格也不太需要這些資訊，所以就拔掉了，試用一下而已xD</p>
+<h2 id="SEO"><a class="header-anchor" href="#SEO"></a>SEO</h2>
+<h3 id="Defer-offscreen-images"><a class="header-anchor" href="#Defer-offscreen-images"></a>Defer offscreen images</h3>
+<p>參考 <a href="https://web.dev/codelab-use-lazysizes-to-lazyload-images/">Lazy load offscreen images with lazysizes</a>，只要載入 <a href="https://github.com/aFarkas/lazysizes">lazysizes</a> 這個 scripts 進來，然後把 <code>src</code> 改成 <code>data-src</code> 並加上 <code>class=&quot;lazyload&quot;</code> 就好了</p>
+<p>註冊個 hexo 的 <code>after_render</code>，把所有 img tag 抓出來改就完事了</p>
+<figure class="highlight js"><figcaption><span>scripts/lazy-load-image.js</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">hexo.extend.filter.register(<span class="string">'after_render:html'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">htmlContent</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> htmlContent.replace(<span class="regexp">/&lt;img src="([^"]*)" (?:class="([^"]*)")?([^&gt;]*)&gt;/</span>, <span class="string">'&lt;img data-src="$1" class="$2 lazyload" $3&gt;'</span>)</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p><a href="https://github.com/aFarkas/lazysizes">lazysizes</a> 有 cdn，很方便的</p>
+<figure class="highlight plain"><figcaption><span>layout/common/scripts.ejs</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;script src&#x3D;&quot;https:&#x2F;&#x2F;cdnjs.cloudflare.com&#x2F;ajax&#x2F;libs&#x2F;lazysizes&#x2F;5.2.0&#x2F;lazysizes.min.js&quot; defer&gt;&lt;&#x2F;script&gt;</span><br></pre></td></tr></table></figure>
+<h3 id="Sitemap"><a class="header-anchor" href="#Sitemap"></a>Sitemap</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-generator-sitemap</span><br></pre></td></tr></table></figure>
+<p>裝好 hexo-generator-sitemap 之後，在 <code>_config.yml</code> 加一行收工</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">sitemap:</span></span><br><span class="line">  <span class="attr">path:</span> <span class="string">sitemap.xml</span></span><br></pre></td></tr></table></figure>
+<h3 id="Robots-txt"><a class="header-anchor" href="#Robots-txt"></a>Robots.txt</h3>
+<p>直接放在 <code>source/_posts</code> 下面就行了，簡單搞定</p>
+
+        </div>
+        
+        
+        <div class="level is-mobile readmore-button">
+            <div class="level-start">
+                <div class="level-item">
+                <a class="button is-size-7 is-light" href="/2020/02/08/blog01/#more">Read More</a>
                 </div>
             </div>
         </div>
@@ -1275,7 +1185,7 @@ A : 先用 <code>pm path com.example.test_app</code> 找出 apk 的路徑，再�
                     </p>
                     <a href="/categories">
                         <p class="title has-text-weight-normal">
-                            8
+                            7
                         </p>
                     </a>
                 </div>
@@ -1287,7 +1197,7 @@ A : 先用 <code>pm path com.example.test_app</code> 找出 apk 的路徑，再�
                     </p>
                     <a href="/tags">
                         <p class="title has-text-weight-normal">
-                            37
+                            39
                         </p>
                     </a>
                 </div>
@@ -1353,17 +1263,9 @@ A : 先用 <code>pm path com.example.test_app</code> 找出 apk 的路徑，再�
                 <span class="level-item">security</span>
             </span>
             <span class="level-end">
-                <span class="level-item tag">14</span>
+                <span class="level-item tag">13</span>
             </span>
         </a><ul><li>
-        <a class="level is-marginless" href="/categories/security/crypto/">
-            <span class="level-start">
-                <span class="level-item">crypto</span>
-            </span>
-            <span class="level-end">
-                <span class="level-item tag">1</span>
-            </span>
-        </a></li><li>
         <a class="level is-marginless" href="/categories/security/news/">
             <span class="level-start">
                 <span class="level-item">news</span>
@@ -1414,7 +1316,7 @@ A : 先用 <code>pm path com.example.test_app</code> 找出 apk 的路徑，再�
         <h3 class="menu-label">
             Tag Cloud
         </h3>
-        <a href="/tags/LINE-TAXI/" style="font-size: 10px;">LINE TAXI</a> <a href="/tags/adb/" style="font-size: 10px;">adb</a> <a href="/tags/algorithm/" style="font-size: 10px;">algorithm</a> <a href="/tags/android/" style="font-size: 13.33px;">android</a> <a href="/tags/blockchain/" style="font-size: 10px;">blockchain</a> <a href="/tags/burp/" style="font-size: 10px;">burp</a> <a href="/tags/crypto/" style="font-size: 11.67px;">crypto</a> <a href="/tags/ctf/" style="font-size: 18.33px;">ctf</a> <a href="/tags/drony/" style="font-size: 10px;">drony</a> <a href="/tags/frida/" style="font-size: 11.67px;">frida</a> <a href="/tags/gdb/" style="font-size: 10px;">gdb</a> <a href="/tags/hexo/" style="font-size: 13.33px;">hexo</a> <a href="/tags/icarus/" style="font-size: 13.33px;">icarus</a> <a href="/tags/iterm2/" style="font-size: 10px;">iterm2</a> <a href="/tags/kernel/" style="font-size: 10px;">kernel</a> <a href="/tags/knapsack/" style="font-size: 10px;">knapsack</a> <a href="/tags/lattice/" style="font-size: 10px;">lattice</a> <a href="/tags/netflix/" style="font-size: 10px;">netflix</a> <a href="/tags/news/" style="font-size: 10px;">news</a> <a href="/tags/nord/" style="font-size: 10px;">nord</a> <a href="/tags/nox/" style="font-size: 10px;">nox</a> <a href="/tags/osint/" style="font-size: 10px;">osint</a> <a href="/tags/powerlevel10k/" style="font-size: 10px;">powerlevel10k</a> <a href="/tags/powerlevel9k/" style="font-size: 10px;">powerlevel9k</a> <a href="/tags/pwn/" style="font-size: 15px;">pwn</a> <a href="/tags/pyc/" style="font-size: 10px;">pyc</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/reverse/" style="font-size: 15px;">reverse</a> <a href="/tags/rootkit/" style="font-size: 10px;">rootkit</a> <a href="/tags/rsa/" style="font-size: 10px;">rsa</a> <a href="/tags/security/" style="font-size: 20px;">security</a> <a href="/tags/seo/" style="font-size: 10px;">seo</a> <a href="/tags/srop/" style="font-size: 10px;">srop</a> <a href="/tags/subset-sum/" style="font-size: 10px;">subset-sum</a> <a href="/tags/writeups/" style="font-size: 16.67px;">writeups</a> <a href="/tags/zimfw/" style="font-size: 10px;">zimfw</a> <a href="/tags/zsh/" style="font-size: 10px;">zsh</a>
+        <a href="/tags/LINE-TAXI/" style="font-size: 10px;">LINE TAXI</a> <a href="/tags/adb/" style="font-size: 10px;">adb</a> <a href="/tags/algorithm/" style="font-size: 10px;">algorithm</a> <a href="/tags/android/" style="font-size: 13.33px;">android</a> <a href="/tags/blockchain/" style="font-size: 10px;">blockchain</a> <a href="/tags/burp/" style="font-size: 10px;">burp</a> <a href="/tags/command/" style="font-size: 10px;">command</a> <a href="/tags/crypto/" style="font-size: 10px;">crypto</a> <a href="/tags/ctf/" style="font-size: 18.33px;">ctf</a> <a href="/tags/drony/" style="font-size: 10px;">drony</a> <a href="/tags/frida/" style="font-size: 11.67px;">frida</a> <a href="/tags/gdb/" style="font-size: 10px;">gdb</a> <a href="/tags/hexo/" style="font-size: 13.33px;">hexo</a> <a href="/tags/icarus/" style="font-size: 13.33px;">icarus</a> <a href="/tags/iterm2/" style="font-size: 10px;">iterm2</a> <a href="/tags/kernel/" style="font-size: 10px;">kernel</a> <a href="/tags/netflix/" style="font-size: 10px;">netflix</a> <a href="/tags/news/" style="font-size: 10px;">news</a> <a href="/tags/nord/" style="font-size: 10px;">nord</a> <a href="/tags/nox/" style="font-size: 10px;">nox</a> <a href="/tags/osint/" style="font-size: 10px;">osint</a> <a href="/tags/powerlevel10k/" style="font-size: 10px;">powerlevel10k</a> <a href="/tags/powerlevel9k/" style="font-size: 10px;">powerlevel9k</a> <a href="/tags/proxy/" style="font-size: 10px;">proxy</a> <a href="/tags/pwn/" style="font-size: 15px;">pwn</a> <a href="/tags/pyc/" style="font-size: 10px;">pyc</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/reverse/" style="font-size: 15px;">reverse</a> <a href="/tags/reverse-ssh/" style="font-size: 10px;">reverse ssh</a> <a href="/tags/rootkit/" style="font-size: 10px;">rootkit</a> <a href="/tags/rsa/" style="font-size: 10px;">rsa</a> <a href="/tags/security/" style="font-size: 20px;">security</a> <a href="/tags/seo/" style="font-size: 10px;">seo</a> <a href="/tags/srop/" style="font-size: 10px;">srop</a> <a href="/tags/ssh/" style="font-size: 10px;">ssh</a> <a href="/tags/tunnel/" style="font-size: 10px;">tunnel</a> <a href="/tags/writeups/" style="font-size: 16.67px;">writeups</a> <a href="/tags/zimfw/" style="font-size: 10px;">zimfw</a> <a href="/tags/zsh/" style="font-size: 10px;">zsh</a>
     </div>
 </div>
     
@@ -1442,7 +1344,7 @@ A : 先用 <code>pm path com.example.test_app</code> 找出 apk 的路徑，再�
             <div class="media-content">
                 <div class="content">
                     <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-07-30T16:29:25.000Z">2020-07-31</time></div>
-                    <a href="/2020/07/31/security/osint/maltego/" class="title has-link-black-ter is-size-6 has-text-weight-normal">[小工具] Maltego</a>
+                    <a href="/2020/07/31/security/osint/maltego/" class="title has-link-black-ter is-size-6 has-text-weight-normal">【小工具】Maltego</a>
                     <p class="is-size-7 is-uppercase">
                         <a class="has-link-grey -link" href="/categories/security/">security</a> / <a class="has-link-grey -link" href="/categories/security/osint/">osint</a>
                     </p>
@@ -1455,7 +1357,7 @@ A : 先用 <code>pm path com.example.test_app</code> 找出 apk 的路徑，再�
             <div class="media-content">
                 <div class="content">
                     <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-06-09T14:29:00.000Z">2020-06-09</time></div>
-                    <a href="/2020/06/09/security/writeups/ais3-2020-preexam/" class="title has-link-black-ter is-size-6 has-text-weight-normal">[Writeups] AIS3 pre-exam 2020</a>
+                    <a href="/2020/06/09/security/writeups/ais3-2020-preexam/" class="title has-link-black-ter is-size-6 has-text-weight-normal">【Writeups】AIS3 pre-exam 2020</a>
                     <p class="is-size-7 is-uppercase">
                         <a class="has-link-grey -link" href="/categories/security/">security</a> / <a class="has-link-grey -link" href="/categories/security/writeups/">writeups</a>
                     </p>
@@ -1468,7 +1370,7 @@ A : 先用 <code>pm path com.example.test_app</code> 找出 apk 的路徑，再�
             <div class="media-content">
                 <div class="content">
                     <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-05-04T06:33:13.000Z">2020-05-04</time></div>
-                    <a href="/2020/05/04/security/writeups/f-hash/" class="title has-link-black-ter is-size-6 has-text-weight-normal">[Writeups] VolgaCTF Quals 2020 - F-Hash</a>
+                    <a href="/2020/05/04/security/writeups/f-hash/" class="title has-link-black-ter is-size-6 has-text-weight-normal">【Writeups】VolgaCTF Quals 2020 - F-Hash</a>
                     <p class="is-size-7 is-uppercase">
                         <a class="has-link-grey -link" href="/categories/security/">security</a> / <a class="has-link-grey -link" href="/categories/security/writeups/">writeups</a>
                     </p>
@@ -1480,10 +1382,10 @@ A : 先用 <code>pm path com.example.test_app</code> 找出 apk 的路徑，再�
             
             <div class="media-content">
                 <div class="content">
-                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-03-20T13:11:11.000Z">2020-03-20</time></div>
-                    <a href="/2020/03/20/security/crypto/knapsack-crypto/" class="title has-link-black-ter is-size-6 has-text-weight-normal">[後量子密碼] Knapsack Cryptosystem and Subset-Sum Problem</a>
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-03-18T12:31:14.000Z">2020-03-18</time></div>
+                    <a href="/2020/03/18/security/reverse/android-proxy/" class="title has-link-black-ter is-size-6 has-text-weight-normal">【安卓逆向】透過 Burp Suite Proxy 夜神模擬器</a>
                     <p class="is-size-7 is-uppercase">
-                        <a class="has-link-grey -link" href="/categories/security/">security</a> / <a class="has-link-grey -link" href="/categories/security/crypto/">crypto</a>
+                        <a class="has-link-grey -link" href="/categories/security/">security</a> / <a class="has-link-grey -link" href="/categories/security/reverse/">reverse</a>
                     </p>
                 </div>
             </div>
@@ -1550,7 +1452,7 @@ A : 先用 <code>pm path com.example.test_app</code> 找出 apk 的路徑，再�
                     <span class="level-item">March 2020</span>
                 </span>
                 <span class="level-end">
-                    <span class="level-item tag">2</span>
+                    <span class="level-item tag">1</span>
                 </span>
             </a>
         </li>
@@ -1643,6 +1545,17 @@ A : 先用 <code>pm path com.example.test_app</code> 找出 apk 的路徑，再�
             </a>
         </li>
         
+        <li>
+            <a class="level is-marginless" href="/archives/2018/08/">
+                <span class="level-start">
+                    <span class="level-item">August 2018</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
         </ul>
         </div>
     </div>
@@ -1669,7 +1582,7 @@ A : 先用 <code>pm path com.example.test_app</code> 找出 apk 的路徑，再�
                 
                 </a>
                 <p class="is-size-7">
-                &copy; 2020 oalieno&nbsp;
+                &copy; 2021 oalieno&nbsp;
                 Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> & <a
                         href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a>
                 
