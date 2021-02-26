@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
 
-<meta name="generator" content="Hexo 4.2.0" />
+<meta name="generator" content="Hexo 4.2.1" />
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
 
@@ -157,6 +157,152 @@
         
         <div class="level article-meta is-size-7 is-uppercase is-mobile is-overflow-x-auto">
             <div class="level-left">
+                <time class="level-item has-text-grey" datetime="2021-02-26T16:06:00.000Z">2021-02-27</time>
+                
+                <div class="level-item">
+                <a class="has-link-grey -link" href="/categories/blockchain/">blockchain</a>
+                </div>
+                
+                
+                <span class="level-item has-text-grey">
+                    
+                    
+                    8 minutes read (About 1210 words)
+                </span>
+                
+                
+            </div>
+        </div>
+        
+        <h1 class="title is-size-3 is-size-4-mobile has-text-weight-normal">
+            
+                <a class="has-link-black-ter" href="/2021/02/27/blockchain/flow/">【項目介紹】Flow ( Dapper Labs )</a>
+            
+        </h1>
+        <div class="content">
+            <p>這個項目算是很新的項目，去年的 9/22 - 10/3 才在第一波 ICO，每人限購 1000 USDC，當時 ICO 的價格是一顆 FLOW 要價 0.1 USDC，到現在也漲了 200 倍了吧，只恨沒有買更多啊 Orz 不過要鎖倉一年，所以要到今年底才拿的回來，但是光是產生的利息就已經回本好幾倍了xD<br>
+好了，廢話不多說，下面來介紹一下 flow 的特點。</p>
+<h2 id="資源"><a class="header-anchor" href="#資源"></a>資源</h2>
+<p>這邊先放幾個連結，有興趣入門的可以看一下</p>
+<ul>
+<li><a href="https://www.onflow.org/primer">官方寫的入門文章</a></li>
+<li><a href="https://joshuahannan.medium.com/taking-your-first-steps-with-cadence-19dde86bbd0">國外大佬的入坑指南</a></li>
+</ul>
+<h2 id="特點"><a class="header-anchor" href="#特點"></a>特點</h2>
+<p>Flow 是專門為應用程式以及遊戲所構件的一條新的區塊鍊<br>
+在鍊上面可以用 Cadence 這個程式語言撰寫 smart contract，對比隔壁棚的 Ethereum 用 Solidity 寫 smart contract</p>
+<h3 id="Cadence-這個程式語言有什麼特點呢"><a class="header-anchor" href="#Cadence-這個程式語言有什麼特點呢"></a>Cadence 這個程式語言有什麼特點呢</h3>
+<ul>
+<li><strong>Resource-Oriented Programming</strong>
+<ul>
+<li>聽說是參考 facebook 的 Libra 用的 Move 語言</li>
+<li>跟 Rust 的 ownership 很像</li>
+<li>可以看看下面兩篇 papers，在講怎麼樣設計一個適合用在 smart contract 上的語言
+<ul>
+<li><a href="https://src.acm.org/binaries/content/assets/src/2018/michael-coblenz.pdf">Obsidian: A Safer Blockchain Programming Language</a></li>
+<li><a href="http://www.cs.cmu.edu/~balzers/publications/digital_contracts_as_session_types.pdf">Resource-Aware Session Types for Digital Contracts</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>Upgradable Smart Contract</strong>
+<ul>
+<li>多了一個 beta state 可以讓你盡情的 upgrade，在這個階段，如果使用這要用就要自行承擔風險囉，話是這樣說的</li>
+<li>等到都測試完後，就可以正式 release 了，之後就跟隔壁棚 Ethereum 的 smart contract 一樣就不能再改他了</li>
+</ul>
+</li>
+<li><strong>Built-in Logging Support</strong>
+<ul>
+<li>只會在 transaction 上標記一個記號，你想要看 log 就自己在離線執行一次就可以看到了，不像隔壁棚 Ethereum 把 log 儲存在鍊上面</li>
+<li>在 Cadence 語言中就直接 <code>log(&quot;hi&quot;)</code> 就可以印 log 了，不像隔壁棚 Ethereum 還要先定義 event 再 emit</li>
+</ul>
+</li>
+</ul>
+<h3 id="Flow-這條區塊鍊有哪些特點呢"><a class="header-anchor" href="#Flow-這條區塊鍊有哪些特點呢"></a>Flow 這條區塊鍊有哪些特點呢</h3>
+<ul>
+<li><strong>垂直分工 ( pipeline )</strong>，把問題切成四份，某種問題會有一種專門的節點負責處理
+<ul>
+<li>不像隔壁棚 Ethereum 尋求 sharding 的解決方式，用平行分工把所有交易切成很多子鍊，多了很多問題</li>
+<li>分下面四種工作
+<ul>
+<li>Consensus Nodes    : 共識機制在此發功，Flow 使用 HotStuff 共識機制</li>
+<li>Verification Nodes : 檢查正確性，取締違規者</li>
+<li>Execution Nodes    : 執行交易附帶的那些計算工作，也就是 smart contract 裡面的程式</li>
+<li>Collection Nodes   : 負責包裝交易們處理些雜事，再丟給 Consensus Nodes，用來提昇整體區塊鍊的效率</li>
+</ul>
+</li>
+<li>總而言之
+<ul>
+<li>Consensus 和 Verification 這兩種 Node 是安全守門員負責讓 Flow 更安全</li>
+<li>Execution 和 Collection 這兩種 Node 是瘋狂機器人負責讓 Flow 更有效率跑得更快</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>每個帳號裡面都可以有多個 smart contract，不像隔壁棚 Ethereum 的 smart contract 和 address 是一對一的關係</li>
+<li>內建支援 <strong>multi-signature</strong>，每個 key 會有一個 weight，只有你提供的 key 們的 weight 加起來有 1000 就可以做事情了</li>
+<li>聽官網介紹是說有<strong>帳號恢復機制</strong>，不清楚細節</li>
+<li>強調說他遵守了資料庫系統的 ACID ( Atomic, Consistent, Isolated, and Durable ) 原則，因為根本上區塊鍊就是一個去中心化的資料庫</li>
+</ul>
+<h3 id="Flow-目前的一些問題"><a class="header-anchor" href="#Flow-目前的一些問題"></a>Flow 目前的一些問題</h3>
+<p>目前 Flow 還在初期階段，有些東西還沒搞好<br>
+下面一些資訊是我在 discord 群看到的</p>
+<blockquote>
+<p>we still have a lot of things locked down in mainnet right now. The ability to create accounts is one of them. At this time only partnered wallets can create accounts. This will obviously be opened up in the future. At a minimum it won’t happen until fees are in place on mainnet.</p>
+<ul>
+<li>qvvg on discord</li>
+</ul>
+</blockquote>
+<p>主網路還沒好啊，不能隨意創帳號<br>
+需要他們合作的夥伴像是 blockto 才能創，可以用 <a href="https://port.onflow.org/">https://port.onflow.org/</a> 這個創帳號的樣子<br>
+還不夠去中心化啊</p>
+<blockquote>
+<p>Flow’s fee model is still under development, but will have transaction fees. The payer of a transaction can be separate from the authorizer, so dapps can easily pay for their users transactions. Flow keeps tx fees affordable and accessible for all.</p>
+<ul>
+<li>Flow Assistant Bot on discord</li>
+</ul>
+</blockquote>
+<p>手續費的機制也還沒弄好啊</p>
+<blockquote>
+<p>Flow is an decentralized protocol being built in an open ecosystem - there is no formal roadmap but if you’d like to see areas people are currently expending effort you can take a look at issues currently in the GitHub repo <a href="https://github.com/onflow/flow/issues">https://github.com/onflow/flow/issues</a> and feel free to create or comment on issues for anything that you think should exist on Flow.</p>
+<ul>
+<li>Flow Assistant Bot on discord</li>
+</ul>
+</blockquote>
+<p>沒有正式的 roadmap</p>
+<h3 id="總結"><a class="header-anchor" href="#總結"></a>總結</h3>
+<p>Flow 提出了很多方案來改進去中心化應用面臨到的問題，接下來就要靜待時間的考驗，等潮水退了就知道 Flow 有沒有穿褲子了</p>
+<h3 id="Flow-to-the-Moon-🚀"><a class="header-anchor" href="#Flow-to-the-Moon-🚀"></a><strong>Flow to the Moon 🚀</strong></h3>
+
+        </div>
+        
+        
+        <div class="level is-mobile readmore-button">
+            <div class="level-start">
+                <div class="level-item">
+                <a class="button is-size-7 is-light" href="/2021/02/27/blockchain/flow/#more">Read More</a>
+                </div>
+            </div>
+        </div>
+        
+        
+    </div>
+</div>
+
+
+
+
+
+
+
+
+    
+<div class="card card-readmore">
+    
+    <div class="card-content article ">
+        
+        <div class="level article-meta is-size-7 is-uppercase is-mobile is-overflow-x-auto">
+            <div class="level-left">
                 <time class="level-item has-text-grey" datetime="2019-06-06T16:00:00.000Z">2019-06-07</time>
                 
                 <div class="level-item">
@@ -302,7 +448,7 @@
                     </p>
                     <a href="/archives">
                         <p class="title has-text-weight-normal">
-                            23
+                            24
                         </p>
                     </a>
                 </div>
@@ -314,7 +460,7 @@
                     </p>
                     <a href="/categories">
                         <p class="title has-text-weight-normal">
-                            7
+                            8
                         </p>
                     </a>
                 </div>
@@ -326,7 +472,7 @@
                     </p>
                     <a href="/tags">
                         <p class="title has-text-weight-normal">
-                            39
+                            41
                         </p>
                     </a>
                 </div>
@@ -382,6 +528,14 @@
         <a class="level is-marginless" href="/categories/algorithm/">
             <span class="level-start">
                 <span class="level-item">algorithm</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">1</span>
+            </span>
+        </a></li><li>
+        <a class="level is-marginless" href="/categories/blockchain/">
+            <span class="level-start">
+                <span class="level-item">blockchain</span>
             </span>
             <span class="level-end">
                 <span class="level-item tag">1</span>
@@ -445,7 +599,7 @@
         <h3 class="menu-label">
             Tag Cloud
         </h3>
-        <a href="/tags/LINE-TAXI/" style="font-size: 10px;">LINE TAXI</a> <a href="/tags/adb/" style="font-size: 10px;">adb</a> <a href="/tags/algorithm/" style="font-size: 10px;">algorithm</a> <a href="/tags/android/" style="font-size: 13.33px;">android</a> <a href="/tags/blockchain/" style="font-size: 10px;">blockchain</a> <a href="/tags/burp/" style="font-size: 10px;">burp</a> <a href="/tags/command/" style="font-size: 10px;">command</a> <a href="/tags/crypto/" style="font-size: 10px;">crypto</a> <a href="/tags/ctf/" style="font-size: 18.33px;">ctf</a> <a href="/tags/drony/" style="font-size: 10px;">drony</a> <a href="/tags/frida/" style="font-size: 11.67px;">frida</a> <a href="/tags/gdb/" style="font-size: 10px;">gdb</a> <a href="/tags/hexo/" style="font-size: 13.33px;">hexo</a> <a href="/tags/icarus/" style="font-size: 13.33px;">icarus</a> <a href="/tags/iterm2/" style="font-size: 10px;">iterm2</a> <a href="/tags/kernel/" style="font-size: 10px;">kernel</a> <a href="/tags/netflix/" style="font-size: 10px;">netflix</a> <a href="/tags/news/" style="font-size: 10px;">news</a> <a href="/tags/nord/" style="font-size: 10px;">nord</a> <a href="/tags/nox/" style="font-size: 10px;">nox</a> <a href="/tags/osint/" style="font-size: 10px;">osint</a> <a href="/tags/powerlevel10k/" style="font-size: 10px;">powerlevel10k</a> <a href="/tags/powerlevel9k/" style="font-size: 10px;">powerlevel9k</a> <a href="/tags/proxy/" style="font-size: 10px;">proxy</a> <a href="/tags/pwn/" style="font-size: 15px;">pwn</a> <a href="/tags/pyc/" style="font-size: 10px;">pyc</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/reverse/" style="font-size: 15px;">reverse</a> <a href="/tags/reverse-ssh/" style="font-size: 10px;">reverse ssh</a> <a href="/tags/rootkit/" style="font-size: 10px;">rootkit</a> <a href="/tags/rsa/" style="font-size: 10px;">rsa</a> <a href="/tags/security/" style="font-size: 20px;">security</a> <a href="/tags/seo/" style="font-size: 10px;">seo</a> <a href="/tags/srop/" style="font-size: 10px;">srop</a> <a href="/tags/ssh/" style="font-size: 10px;">ssh</a> <a href="/tags/tunnel/" style="font-size: 10px;">tunnel</a> <a href="/tags/writeups/" style="font-size: 16.67px;">writeups</a> <a href="/tags/zimfw/" style="font-size: 10px;">zimfw</a> <a href="/tags/zsh/" style="font-size: 10px;">zsh</a>
+        <a href="/tags/LINE-TAXI/" style="font-size: 10px;">LINE TAXI</a> <a href="/tags/adb/" style="font-size: 10px;">adb</a> <a href="/tags/algorithm/" style="font-size: 10px;">algorithm</a> <a href="/tags/android/" style="font-size: 13.33px;">android</a> <a href="/tags/blockchain/" style="font-size: 11.67px;">blockchain</a> <a href="/tags/burp/" style="font-size: 10px;">burp</a> <a href="/tags/command/" style="font-size: 10px;">command</a> <a href="/tags/crypto/" style="font-size: 10px;">crypto</a> <a href="/tags/ctf/" style="font-size: 18.33px;">ctf</a> <a href="/tags/dapper-labs/" style="font-size: 10px;">dapper labs</a> <a href="/tags/drony/" style="font-size: 10px;">drony</a> <a href="/tags/flow/" style="font-size: 10px;">flow</a> <a href="/tags/frida/" style="font-size: 11.67px;">frida</a> <a href="/tags/gdb/" style="font-size: 10px;">gdb</a> <a href="/tags/hexo/" style="font-size: 13.33px;">hexo</a> <a href="/tags/icarus/" style="font-size: 13.33px;">icarus</a> <a href="/tags/iterm2/" style="font-size: 10px;">iterm2</a> <a href="/tags/kernel/" style="font-size: 10px;">kernel</a> <a href="/tags/netflix/" style="font-size: 10px;">netflix</a> <a href="/tags/news/" style="font-size: 10px;">news</a> <a href="/tags/nord/" style="font-size: 10px;">nord</a> <a href="/tags/nox/" style="font-size: 10px;">nox</a> <a href="/tags/osint/" style="font-size: 10px;">osint</a> <a href="/tags/powerlevel10k/" style="font-size: 10px;">powerlevel10k</a> <a href="/tags/powerlevel9k/" style="font-size: 10px;">powerlevel9k</a> <a href="/tags/proxy/" style="font-size: 10px;">proxy</a> <a href="/tags/pwn/" style="font-size: 15px;">pwn</a> <a href="/tags/pyc/" style="font-size: 10px;">pyc</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/reverse/" style="font-size: 15px;">reverse</a> <a href="/tags/reverse-ssh/" style="font-size: 10px;">reverse ssh</a> <a href="/tags/rootkit/" style="font-size: 10px;">rootkit</a> <a href="/tags/rsa/" style="font-size: 10px;">rsa</a> <a href="/tags/security/" style="font-size: 20px;">security</a> <a href="/tags/seo/" style="font-size: 10px;">seo</a> <a href="/tags/srop/" style="font-size: 10px;">srop</a> <a href="/tags/ssh/" style="font-size: 10px;">ssh</a> <a href="/tags/tunnel/" style="font-size: 10px;">tunnel</a> <a href="/tags/writeups/" style="font-size: 16.67px;">writeups</a> <a href="/tags/zimfw/" style="font-size: 10px;">zimfw</a> <a href="/tags/zsh/" style="font-size: 10px;">zsh</a>
     </div>
 </div>
     
@@ -454,6 +608,19 @@
         <h3 class="menu-label">
             Recent
         </h3>
+        
+        <article class="media">
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2021-02-26T16:06:00.000Z">2021-02-27</time></div>
+                    <a href="/2021/02/27/blockchain/flow/" class="title has-link-black-ter is-size-6 has-text-weight-normal">【項目介紹】Flow ( Dapper Labs )</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/blockchain/">blockchain</a>
+                    </p>
+                </div>
+            </div>
+        </article>
         
         <article class="media">
             
@@ -507,19 +674,6 @@
             </div>
         </article>
         
-        <article class="media">
-            
-            <div class="media-content">
-                <div class="content">
-                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-03-18T12:31:14.000Z">2020-03-18</time></div>
-                    <a href="/2020/03/18/security/reverse/android-proxy/" class="title has-link-black-ter is-size-6 has-text-weight-normal">【安卓逆向】透過 Burp Suite Proxy 夜神模擬器</a>
-                    <p class="is-size-7 is-uppercase">
-                        <a class="has-link-grey -link" href="/categories/security/">security</a> / <a class="has-link-grey -link" href="/categories/security/reverse/">reverse</a>
-                    </p>
-                </div>
-            </div>
-        </article>
-        
     </div>
 </div>
     
@@ -530,6 +684,17 @@
             Archives
         </h3>
         <ul class="menu-list">
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2021/02/">
+                <span class="level-start">
+                    <span class="level-item">February 2021</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
         
         <li>
             <a class="level is-marginless" href="/archives/2020/08/">

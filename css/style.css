@@ -50,6 +50,17 @@ textarea {
     top: 1.5rem;
   }
 }
+blockquote ul {
+  color: #808080;
+  margin-top: 0 !important;
+  margin-left: 1em !important;
+}
+blockquote ul li {
+  padding-left: 5px;
+}
+blockquote ul li::marker {
+  content: "👨";
+}
 .tag.is-grey {
   background: #e7e7e7;
 }
