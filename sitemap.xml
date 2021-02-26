@@ -149,7 +149,7 @@
   </url>
   
   <url>
-    <loc>https://oalieno.github.io/2020/08/16/security/news/clipboard-hijack/</loc>
+    <loc>https://oalieno.github.io/2019/06/07/security/pwn/rootkit/</loc>
     
     <lastmod>2020-08-29</lastmod>
     
@@ -163,7 +163,7 @@
   </url>
   
   <url>
-    <loc>https://oalieno.github.io/2019/06/07/security/pwn/rootkit/</loc>
+    <loc>https://oalieno.github.io/2020/08/16/security/news/clipboard-hijack/</loc>
     
     <lastmod>2020-08-29</lastmod>
     
@@ -200,6 +200,13 @@
   </url>
   
   <url>
+    <loc>https://oalieno.github.io/tags/seo/</loc>
+    <lastmod>2021-02-26</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://oalieno.github.io/tags/LINE-TAXI/</loc>
     <lastmod>2021-02-26</lastmod>
     <changefreq>daily</changefreq>
@@ -208,13 +215,6 @@
   
   <url>
     <loc>https://oalieno.github.io/tags/security/</loc>
-    <lastmod>2021-02-26</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://oalieno.github.io/tags/seo/</loc>
     <lastmod>2021-02-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -347,13 +347,6 @@
   </url>
   
   <url>
-    <loc>https://oalieno.github.io/tags/news/</loc>
-    <lastmod>2021-02-26</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>https://oalieno.github.io/tags/pwn/</loc>
     <lastmod>2021-02-26</lastmod>
     <changefreq>daily</changefreq>
@@ -368,7 +361,7 @@
   </url>
   
   <url>
-    <loc>https://oalieno.github.io/tags/osint/</loc>
+    <loc>https://oalieno.github.io/tags/news/</loc>
     <lastmod>2021-02-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -383,6 +376,13 @@
   
   <url>
     <loc>https://oalieno.github.io/tags/srop/</loc>
+    <lastmod>2021-02-26</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://oalieno.github.io/tags/osint/</loc>
     <lastmod>2021-02-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -496,20 +496,6 @@
   </url>
   
   <url>
-    <loc>https://oalieno.github.io/categories/security/osint/</loc>
-    <lastmod>2021-02-26</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://oalieno.github.io/categories/security/news/</loc>
-    <lastmod>2021-02-26</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>https://oalieno.github.io/categories/security/pwn/</loc>
     <lastmod>2021-02-26</lastmod>
     <changefreq>daily</changefreq>
@@ -517,7 +503,21 @@
   </url>
   
   <url>
+    <loc>https://oalieno.github.io/categories/security/osint/</loc>
+    <lastmod>2021-02-26</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://oalieno.github.io/categories/security/reverse/</loc>
+    <lastmod>2021-02-26</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://oalieno.github.io/categories/security/news/</loc>
     <lastmod>2021-02-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
