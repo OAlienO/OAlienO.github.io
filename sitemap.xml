@@ -156,6 +156,13 @@
   </url>
   
   <url>
+    <loc>https://oalieno.github.io/2019/09/18/security/pwn/srop/</loc>
+    
+    <lastmod>2020-08-29</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://oalieno.github.io/2019/03/21/security/pwn/protection/</loc>
     
     <lastmod>2020-08-29</lastmod>
@@ -164,13 +171,6 @@
   
   <url>
     <loc>https://oalieno.github.io/2019/06/07/security/pwn/rootkit/</loc>
-    
-    <lastmod>2020-08-29</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://oalieno.github.io/2019/09/18/security/pwn/srop/</loc>
     
     <lastmod>2020-08-29</lastmod>
     
@@ -221,13 +221,6 @@
   </url>
   
   <url>
-    <loc>https://oalieno.github.io/tags/netflix/</loc>
-    <lastmod>2021-02-27</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>https://oalieno.github.io/tags/python/</loc>
     <lastmod>2021-02-27</lastmod>
     <changefreq>daily</changefreq>
@@ -236,6 +229,13 @@
   
   <url>
     <loc>https://oalieno.github.io/tags/pyc/</loc>
+    <lastmod>2021-02-27</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://oalieno.github.io/tags/netflix/</loc>
     <lastmod>2021-02-27</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -403,14 +403,7 @@
   </url>
   
   <url>
-    <loc>https://oalieno.github.io/tags/pwn/</loc>
-    <lastmod>2021-02-27</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://oalieno.github.io/tags/rootkit/</loc>
+    <loc>https://oalieno.github.io/tags/frida/</loc>
     <lastmod>2021-02-27</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -424,6 +417,13 @@
   </url>
   
   <url>
+    <loc>https://oalieno.github.io/tags/pwn/</loc>
+    <lastmod>2021-02-27</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://oalieno.github.io/tags/srop/</loc>
     <lastmod>2021-02-27</lastmod>
     <changefreq>daily</changefreq>
@@ -431,7 +431,7 @@
   </url>
   
   <url>
-    <loc>https://oalieno.github.io/tags/frida/</loc>
+    <loc>https://oalieno.github.io/tags/rootkit/</loc>
     <lastmod>2021-02-27</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -439,13 +439,6 @@
   
   <url>
     <loc>https://oalieno.github.io/tags/writeups/</loc>
-    <lastmod>2021-02-27</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://oalieno.github.io/tags/gdb/</loc>
     <lastmod>2021-02-27</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -467,6 +460,13 @@
   
   <url>
     <loc>https://oalieno.github.io/tags/kernel/</loc>
+    <lastmod>2021-02-27</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://oalieno.github.io/tags/gdb/</loc>
     <lastmod>2021-02-27</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
